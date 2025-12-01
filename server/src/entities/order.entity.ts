@@ -3,7 +3,7 @@ import { User } from './user.entity';
 import { OrderStatus } from './orderStatus.entity';
 import { ShoppingCart } from './shoppingCart.entity';
 import { ShippingType } from './shippingType.entity';
-import { ShippingAddress } from './ShippingAddress.entity';
+import { ShippingAddress } from './shippingAddress.entity';
 import { OrderTracking } from './orderTracking.entity';
 
 @Entity({ schema: 'skinlab', name: 'orders' })
