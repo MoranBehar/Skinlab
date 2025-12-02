@@ -12,7 +12,7 @@ export class User {
   @Column({ type: 'text' })
   full_name: string;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'smallint' })
   role_id: number;
 
   @Column({ type: 'text', unique: true })
@@ -31,9 +31,9 @@ export class User {
   creating_date: Date;
 
   // Relations
-  @ManyToOne(() => UserRole, (role) => role.users)
+  @ManyToOne(() => UserRole, (userRole) => userRole.users)
   @JoinColumn({ name: 'role_id' })
-  role: UserRole;
+  userRole: UserRole;
 
   @OneToMany(() => ShippingAddress, (address) => address.user_id)
   shipping_addresses: ShippingAddress[];

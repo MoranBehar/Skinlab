@@ -3,7 +3,7 @@ import { User } from './user.entity';
 
 @Entity({ schema: 'skinlab', name: 'user_roles' })
 export class UserRole {
-  @PrimaryColumn({ type: 'numeric' })
+  @PrimaryColumn({ type: 'smallint' })
   role_id: number;
 
   @Column({ type: 'text', unique: true })
