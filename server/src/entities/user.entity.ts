@@ -12,7 +12,7 @@ export class User {
   @Column({ type: 'text' })
   full_name: string;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'integer' })
   role_id: number;
 
   @Column({ type: 'text', unique: true })
