@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth.module';
 import { UsersModule } from './modules/users.module';
+import { ProductsModule } from './modules/products.module';
 
 // Import all entities
 import { User } from './entities/user.entity';
@@ -64,6 +65,7 @@ import { OrderTracking } from './entities/orderTracking.entity';
     //Feature Modules
     AuthModule,
     UsersModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}
