@@ -187,35 +187,22 @@ export class ProductsService {
   }
 
   // Getting all categories/skin types/etc. for filters
+  private getDistinctFilter(relationName: string, id: string, name: string) {
+    return this.productsRepository
+        .createQueryBuilder('product')
+        .leftJoin(`product.${relationName}`, relationName) 
+        .distinct(true)
+        .select(`${relationName}.${id}`, 'id') 
+        .addSelect(`${relationName}.${name}`, 'name') 
+        .getRawMany();
+  }
+
   async getFilterOptions() {
     const [categories, skinTypes, targetAudiences, productTypes] = await Promise.all([
-      this.productsRepository
-        .createQueryBuilder('product')
-        .leftJoinAndSelect('product.category', 'category')
-        .select('DISTINCT category.category_id', 'id')
-        .addSelect('category.category_name', 'name')
-        .getRawMany(),
-      
-      this.productsRepository
-        .createQueryBuilder('product')
-        .leftJoinAndSelect('product.skin_type_rel', 'skin_type')
-        .select('DISTINCT skin_type.skin_type_id', 'id')
-        .addSelect('skin_type.skin_type_name', 'name')
-        .getRawMany(),
-      
-      this.productsRepository
-        .createQueryBuilder('product')
-        .leftJoinAndSelect('product.target_audience_rel', 'target_audience')
-        .select('DISTINCT target_audience.audience_id', 'id')
-        .addSelect('target_audience.audience_name', 'name')
-        .getRawMany(),
-      
-      this.productsRepository
-        .createQueryBuilder('product')
-        .leftJoinAndSelect('product.product_type_rel', 'product_type')
-        .select('DISTINCT product_type.product_type_id', 'id')
-        .addSelect('product_type.product_type_name', 'name')
-        .getRawMany(),
+      this.getDistinctFilter('category', 'category_id', 'category_name'),
+      this.getDistinctFilter('skin_type_rel', 'skin_type_id', 'skin_type_name'),
+      this.getDistinctFilter('target_audience_rel', 'audience_id', 'audience_name'),
+      this.getDistinctFilter('product_type_rel', 'product_type_id', 'product_type_name'),
     ]);
 
     return {
