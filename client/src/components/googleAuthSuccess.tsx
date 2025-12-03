@@ -1,39 +1,48 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Spinner } from 'react-bootstrap';
+import { useAuth } from '../contexts/authContext';
 import { authService } from '../services/auth.service';
 
-interface GoogleAuthSuccessProps {
-  onSuccess: () => void;
-}
+const GoogleAuthSuccess: React.FC = () => {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
 
-const GoogleAuthSuccess: React.FC<GoogleAuthSuccessProps> = ({ onSuccess }) => {
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    
-    if (token) {
-      localStorage.setItem('access_token', token);
-      
-      authService.fetchUserData(token)
-        .then(userData => {
-          localStorage.setItem('user', JSON.stringify(userData));
-          onSuccess();
-        })
-        .catch(err => {
-          console.error('Error fetching user data:', err);
-          window.location.href = '/';
-        });
-    }
-  }, [onSuccess]);
+    const handleGoogleCallback = async () => {
+      try {
+        // קבלת token מה-URL
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (token) {
+          // שמירת token
+          localStorage.setItem('access_token', token);
+          
+          // קבלת פרטי משתמש
+          const user = await authService.getMe();
+          localStorage.setItem('user', JSON.stringify(user));
+          setUser(user);
+          navigate('/home');
+        } else {
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Google auth error:', error);
+        navigate('/login');
+      }
+    };
+
+    handleGoogleCallback();
+  }, [navigate, setUser]);
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center">
+    <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
       <div className="text-center">
-        <div className="spinner-border text-primary mb-3" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p>Completing Google sign in...</p>
+        <Spinner animation="border" role="status" className="mb-3" />
+        <p>Completing Google authentication...</p>
       </div>
-    </div>
+    </Container>
   );
 };
 

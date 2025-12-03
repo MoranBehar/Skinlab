@@ -1,87 +1,113 @@
-import { User, AuthResponse, LoginCredentials, RegisterCredentials } from '../types/auth.types';
+import axios from 'axios';
+import { User } from '../types/auth.types';
+
+interface LoginResponse {
+  access_token: string;
+  user: User;
+}
+
+interface RegisterResponse {
+  access_token: string;
+  user: User;
+}
 
 class AuthService {
-  async login(email: string, password: string, rememberMe: boolean): Promise<AuthResponse> {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
-    }
-    
-    const data = await response.json();
-    
-    // Save token and user
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('access_token', data.access_token);
-    storage.setItem('user', JSON.stringify(data.user));
-    
-    return data;
-  }
+  async login(email: string, password: string, rememberMe: boolean): Promise<LoginResponse> {
+    try {
+      const response = await axios.post<LoginResponse>(`${process.env.REACT_APP_API_URL}/auth/login`, {
+        email,
+        password,
+        rememberMe,
+      });
 
-  async register(fullName: string, email: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        full_name: fullName, 
-        email, 
-        password 
-      }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
-    }
-    
-    const data = await response.json();
-    
-    // Save token and user
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    
-    return data;
-  }
-
-  async fetchUserData(token: string): Promise<User> {
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+      if (response.data.access_token) {
+        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
       }
-    });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch user data');
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Login failed');
+    }
+  }
+
+  async register(fullName: string, email: string, password: string): Promise<RegisterResponse> {
+    try {
+      const response = await axios.post<RegisterResponse>(`${process.env.REACT_APP_API_URL}/auth/register`, {
+        full_name: fullName,
+        email,
+        password,
+      });
+
+      if (response.data.access_token) {
+        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Registration failed');
+    }
+  }
+
+  async logout(): Promise<void> {
+    try {
+      const token = this.getToken();
+      
+      if (token) {
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/auth/logout`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+    }
+  }
+
+  async getMe(): Promise<User> {
+    const token = this.getToken();
+    
+    if (!token) {
+      throw new Error('No token found');
     }
 
-    return await response.json();
+    try {
+      const response = await axios.get<User>(`${process.env.REACT_APP_API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to get user info');
+    }
   }
 
   getToken(): string | null {
-    return localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    return localStorage.getItem('access_token');
   }
 
   getUser(): User | null {
-    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
-  }
-
-  logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('access_token');
-    sessionStorage.removeItem('user');
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      return userStr ? JSON.parse(userStr) : null;
+    }
+    return null;
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return !!this.getToken() && !!this.getUser();
   }
 }
 
 export const authService = new AuthService();
-

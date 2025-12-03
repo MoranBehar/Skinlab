@@ -1,84 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { authService } from './services/auth.service';
-import { User } from './types/auth.types';
-import LoginPage from './components/loginPage';
-import SignupPage from './components/signupPage';
-import HomePage from './components/homePage';
+// src/App.tsx
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/authContext';
+import ProtectedRoute from './components/protectedRoute';
+import PublicRoute from './components/publicRoute';
+import MainLayout from './components/mainLayout';
+
+// Pages
+import LoginPage from './pages/loginPage';
+import SignupPage from './pages/signupPage';
+import HomePage from './pages/homePage';
+import ProductsPage from './pages/productsPage';
+import ProductDetailPage from './pages/productDetailPage';
 import GoogleAuthSuccess from './components/googleAuthSuccess';
 
-type PageType = 'login' | 'signup' | 'home' | 'google-success';
-
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<PageType>('login');
-  const [user, setUser] = useState<User | null>(null);
+  return (
+    <AuthProvider>
+      <Routes>
+        {/* Public Routes - only for not connected */}
+        <Route path="login" element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>}/>
+        
+        <Route path="signup" element={
+            <PublicRoute>
+              <SignupPage />
+            </PublicRoute> } />
 
-  useEffect(() => {
-    // Check if already logged in
-    const token = authService.getToken();
-    const savedUser = authService.getUser();
-    
-    if (token && savedUser) {
-      setUser(savedUser);
-      setCurrentPage('home');
-    }
+        {/* Google OAuth Callback */}
+        <Route path="auth/google/success" element={<GoogleAuthSuccess />} />
 
-    // Check for Google OAuth callback
-    if (window.location.pathname === '/auth/google/success') {
-      setCurrentPage('google-success');
-    }
-  }, []);
 
-  const handleLogin = () => {
-    const savedUser = authService.getUser();
-    setUser(savedUser);
-    setCurrentPage('home');
-  };
+        {/* Nested Route for Main Layout */}
+        <Route path="/" element={<MainLayout />} >
 
-  const handleSignup = () => {
-    const savedUser = authService.getUser();
-    setUser(savedUser);
-    setCurrentPage('home');
-  };
+          {/* Default Route */}
+          <Route index element={<Navigate to="/products" replace />} />
 
-  const handleLogout = () => {
-    authService.logout();
-    setUser(null);
-    setCurrentPage('login');
-  };
+          {/* Public Routes - evreyone can see */}
+          <Route path="products" element={ <ProductsPage />}  />
 
-  const handleGoogleSuccess = () => {
-    const savedUser = authService.getUser();
-    setUser(savedUser);
-    setCurrentPage('home');
-  };
+          <Route path="products/:id" element={ <ProductDetailPage /> } />
 
-  if (currentPage === 'google-success') {
-    return <GoogleAuthSuccess onSuccess={handleGoogleSuccess} />;
-  }
+          {/* Protected Routes - only for cnnected */}
+          <Route path="home" element={
+              <ProtectedRoute>
+                  <HomePage />
+              </ProtectedRoute>  } />
 
-  if (currentPage === 'login') {
-    return (
-      <LoginPage 
-        onLogin={handleLogin} 
-        onNavigateToSignup={() => setCurrentPage('signup')}
-      />
-    );
-  }
+        </Route>
 
-  if (currentPage === 'signup') {
-    return (
-      <SignupPage 
-        onSignup={handleSignup}
-        onNavigateToLogin={() => setCurrentPage('login')}
-      />
-    );
-  }
-
-  if (currentPage === 'home' && user) {
-    return <HomePage user={user} onLogout={handleLogout} />;
-  }
-
-  return null;
+        {/* 404 Not Found */}
+        <Route path="*" element={<Navigate to="/products" replace />} />
+      </Routes>
+    </AuthProvider>
+  );
 };
 
 export default App;
