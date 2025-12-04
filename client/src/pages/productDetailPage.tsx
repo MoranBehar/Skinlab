@@ -5,21 +5,21 @@ import { productsAPI } from '../services/products.api';
 import { Product } from '../types/product.types';
 
 const ProductDetailPage: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useEffect(() => {    
     const loadProduct = async () => {
-      if (!productId) return;
+      if (!id) return;
       
       setLoading(true);
       setError(null);
       
       try {
-        const data = await productsAPI.getProduct(Number(productId));
+        const data = await productsAPI.getProduct(Number(id));
         setProduct(data);
       } catch (err: any) {
         setError('Failed to load product details');
@@ -30,7 +30,7 @@ const ProductDetailPage: React.FC = () => {
     };
 
     loadProduct();
-  }, [productId]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -92,13 +92,13 @@ const ProductDetailPage: React.FC = () => {
           {/* Badges */}
           <div className="mb-3">
             <Badge bg="secondary" className="me-2">
-              {product.category.category_name.replace(/_/g, ' ')}
+              {product.category?.category_name.replace(/_/g, ' ')}
             </Badge>
             <Badge bg="info" className="me-2">
-              {product.skin_type_rel.skin_type_name}
+              {product.skin_type_rel?.skin_type_name}
             </Badge>
             <Badge bg="success">
-              {product.target_audience_rel.audience_name.replace(/_/g, ' ')}
+              {product.target_audience_rel?.audience_name.replace(/_/g, ' ')}
             </Badge>
           </div>
 
@@ -116,14 +116,14 @@ const ProductDetailPage: React.FC = () => {
               <>
                 <h3 className="d-inline text-danger">₪{finalPrice.toFixed(2)}</h3>
                 <span className="text-decoration-line-through text-muted ms-3 fs-5">
-                  ₪{product.price.toFixed(2)}
+                  ₪{Number(product.price).toFixed(2)}
                 </span>
                 <Badge bg="danger" className="ms-3">
                   Save {product.discount_percentage}%
                 </Badge>
               </>
             ) : (
-              <h3>₪{product.price.toFixed(2)}</h3>
+              <h3>₪{Number(product.price).toFixed(2)}</h3>
             )}
           </div>
 
@@ -142,13 +142,13 @@ const ProductDetailPage: React.FC = () => {
           {/* Product Type */}
           <div className="mb-4">
             <p className="mb-1">
-              <strong>Product Type:</strong> {product.product_type_rel.product_type_name.replace(/_/g, ' ')}
+              <strong>Product Type:</strong> {product.product_type_rel?.product_type_name.replace(/_/g, ' ')}
             </p>
             <p className="mb-1">
-              <strong>Skin Type:</strong> {product.skin_type_rel.skin_type_name}
+              <strong>Skin Type:</strong> {product.skin_type_rel?.skin_type_name}
             </p>
             <p className="mb-1">
-              <strong>Category:</strong> {product.category.category_name.replace(/_/g, ' ')}
+              <strong>Category:</strong> {product.category?.category_name.replace(/_/g, ' ')}
             </p>
           </div>
 

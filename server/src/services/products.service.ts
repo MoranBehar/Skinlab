@@ -125,16 +125,28 @@ export class ProductsService {
 
 
   async findOne(id: number): Promise<Product> {
-    const product = await this.productsRepository.findOne({
-      where: { product_id: id },
-      relations: ['images', 'category', 'skin_type_rel', 'target_audience_rel', 'product_type_rel'],
-    });
+    try {
+      const product = await this.productsRepository.findOne({
+        where: { product_id: id },
+        relations: ['images', 'category', 'skin_type_rel', 'target_audience_rel', 'product_type_rel'],
+      });
 
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+
+      return product;
+    } catch (error){
+        console.error('--- ERROR IN FINDONE ---');
+        console.error('Failed to retrieve product:', error);
+        console.error('--------------------------');
+
+        if (error instanceof NotFoundException) {
+            throw error;
+        }
+
+        throw new BadRequestException('Database error occurred while fetching product details.');
     }
-
-    return product;
   }
 
   

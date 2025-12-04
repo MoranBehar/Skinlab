@@ -21,8 +21,17 @@ export const productsAPI = {
 
   // Receiving a single product
   getProduct: async (id: number): Promise<Product> => {
-    const response = await api.get<Product>(`/products/${id}`);
-    return response.data;
+    try {
+      const response = await api.get<Product>(`/products/${id}`);
+      return response.data;
+    } catch (error) {
+        const serverMessage = (error as any).response?.data?.message;
+        const errorMessage = serverMessage || 'Network error or unknown failure.';
+        
+        console.error(`Error fetching product ${id}:`, error);
+        
+        throw new Error(errorMessage);
+    }
   },
 
   // Getting filter options
