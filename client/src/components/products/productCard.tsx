@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../../types/product.types';
+import AddToCartButton from '../cart/addToCartButton';
 
 interface ProductCardProps {
   product: Product;
@@ -103,6 +104,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ) : (
             <span className="fw-bold fs-5">₪{Number(product.price).toFixed(2)}</span>
           )}
+
+
+          {/* check for place */}
+          <AddToCartButton 
+            productId={product.product_id} 
+            className="w-100"
+          />
+
+          
         </div>
       </Card.Body>
     </Card>

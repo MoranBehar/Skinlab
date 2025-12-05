@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Badge, Spinner, Alert, Carousel } from 'react-bootstrap';
 import { productsAPI } from '../services/products.api';
 import { Product } from '../types/product.types';
+import AddToCartButton from '../components/cart/addToCartButton';
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -153,9 +154,11 @@ const ProductDetailPage: React.FC = () => {
           </div>
 
           {/* Add to Cart Button */}
-          <Button variant="dark" size="lg" className="w-100">
-            Add to Cart
-          </Button>
+          <AddToCartButton 
+            productId={product.product_id}
+            size="lg"
+            className="w-100"
+          />
         </Col>
       </Row>
     </Container>

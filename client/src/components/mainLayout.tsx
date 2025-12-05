@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Navbar, Nav, Button } from 'react-bootstrap';
 import { Outlet, useNavigate } from 'react-router-dom';
+import CartIcon from './cart/cartIcon';
 import { useAuth } from '../contexts/authContext';
 
 const MainLayout: React.FC = () => {
@@ -32,9 +33,15 @@ const MainLayout: React.FC = () => {
                 Products
               </Nav.Link>
               {isAuthenticated && (
-                <Nav.Link onClick={() => navigate('/home')}>
-                  Dashboard
-                </Nav.Link>
+                <>
+                  <Nav.Link onClick={() => navigate('/home')}>
+                    my skinlab
+                  </Nav.Link>
+
+                  <Nav.Link className="me-3">
+                    <CartIcon />
+                  </Nav.Link>
+                </>
               )}
             </Nav>
 

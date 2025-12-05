@@ -3,27 +3,27 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Import all modules
-import { AuthModule } from './modules/auth.module';
-import { UsersModule } from './modules/users.module';
-import { ProductsModule } from './modules/products.module';
-import { CartModule } from './modules/cart.module';
+import { AuthModule } from '../modules/auth.module';
+import { UsersModule } from '../modules/users.module';
+import { ProductsModule } from '../modules/products.module';
+import { CartModule } from '../modules/cart.module';
 
 // Import all entities
-import { User } from './entities/user.entity';
-import { UserRole } from './entities/userRole.entity';
-import { ShippingAddress } from './entities/shippingAddress.entity';
-import { ProductCategory } from './entities/productCategory.entity';
-import { TargetAudience } from './entities/targetAudience.entity';
-import { SkinType } from './entities/skinType.entity';
-import { ProductType } from './entities/productType.entity';
-import { Product } from './entities/product.entity';
-import { ProductImage } from './entities/productImage.entity';
-import { ShoppingCart } from './entities/shoppingCart.entity';
-import { ShoppingCartItem } from './entities/shoppingCartItem.entity';
-import { OrderStatus } from './entities/orderStatus.entity';
-import { ShippingType } from './entities/shippingType.entity';
-import { Order } from './entities/order.entity';
-import { OrderTracking } from './entities/orderTracking.entity';
+import { User } from '../entities/user.entity';
+import { UserRole } from '../entities/userRole.entity';
+import { ShippingAddress } from '../entities/shippingAddress.entity';
+import { ProductCategory } from '../entities/productCategory.entity';
+import { TargetAudience } from '../entities/targetAudience.entity';
+import { SkinType } from '../entities/skinType.entity';
+import { ProductType } from '../entities/productType.entity';
+import { Product } from '../entities/product.entity';
+import { ProductImage } from '../entities/productImage.entity';
+import { ShoppingCart } from '../entities/shoppingCart.entity';
+import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
+import { OrderStatus } from '../entities/orderStatus.entity';
+import { ShippingType } from '../entities/shippingType.entity';
+import { Order } from '../entities/order.entity';
+import { OrderTracking } from '../entities/orderTracking.entity';
 
 @Module({
   imports: [

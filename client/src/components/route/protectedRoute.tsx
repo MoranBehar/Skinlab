@@ -1,13 +1,13 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/authContext';
+import { useAuth } from '../../contexts/authContext';
 import { Spinner, Container } from 'react-bootstrap';
 
-interface PublicRouteProps {
+interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -20,12 +20,11 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
     );
   }
 
-  // if already signed in - redirect to home
-  if (isAuthenticated) {
-    return <Navigate to="/home" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
 };
 
-export default PublicRoute;
+export default ProtectedRoute;
