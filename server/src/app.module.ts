@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+// Import all modules
 import { AuthModule } from './modules/auth.module';
 import { UsersModule } from './modules/users.module';
 import { ProductsModule } from './modules/products.module';
+import { CartModule } from './modules/cart.module';
 
 // Import all entities
 import { User } from './entities/user.entity';
@@ -66,6 +69,7 @@ import { OrderTracking } from './entities/orderTracking.entity';
     AuthModule,
     UsersModule,
     ProductsModule,
+    CartModule,
   ],
 })
 export class AppModule {}
