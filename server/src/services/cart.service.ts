@@ -51,13 +51,16 @@ export class CartService {
       });
     }
 
+    const taxPrecentage = 0.18;
+    const totalMuliplier = 1 + taxPrecentage;
+
     return {
       cart,
       summary: {
         totalItems,
         subtotal: Number(subtotal.toFixed(2)),
-        tax: Number((subtotal * 0.17).toFixed(2)), 
-        total: Number((subtotal * 1.17).toFixed(2)),
+        tax: Number((subtotal * taxPrecentage).toFixed(2)), 
+        total: Number((subtotal * totalMuliplier).toFixed(2)),
       },
     };
   }

@@ -22,7 +22,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ summary }) => {
           </ListGroup.Item>
 
           <ListGroup.Item className="d-flex justify-content-between px-0">
-            <span>Tax (17%):</span>
+            <span>Tax (18%):</span>
             <span>₪{summary.tax.toFixed(2)}</span>
           </ListGroup.Item>
 
