@@ -7,6 +7,7 @@ import { AuthModule } from '../modules/auth.module';
 import { UsersModule } from '../modules/users.module';
 import { ProductsModule } from '../modules/products.module';
 import { CartModule } from '../modules/cart.module';
+import { OrdersModule } from 'src/modules/orders.module';
 
 // Import all entities
 import { User } from '../entities/user.entity';
@@ -70,6 +71,7 @@ import { OrderTracking } from '../entities/orderTracking.entity';
     UsersModule,
     ProductsModule,
     CartModule,
+    OrdersModule,
   ],
 })
 export class AppModule {}
