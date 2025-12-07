@@ -6,7 +6,7 @@ import { useCart } from '../contexts/cartContext';
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, loading: cartLoading } = useCart();
+  const { cart, loading: cartLoading, clearCart } = useCart();
   const { createOrder } = useOrders();
   
   const [loading, setLoading] = useState(false);
@@ -74,6 +74,8 @@ const CheckoutPage: React.FC = () => {
       };
 
       const order = await createOrder(orderData);
+
+      await clearCart();
       
       // Navigate to order confirmation page
       navigate(`/orders/${order.order_id}`);
