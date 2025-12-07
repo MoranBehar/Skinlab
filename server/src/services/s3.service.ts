@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class S3Service {
@@ -28,14 +29,17 @@ export class S3Service {
 
   /**
    * upload photo to s3
-   * file name: products/{product_id}.jpg
+   * file name: products/{product_id}/{UUID}.jpg
    */
   async uploadProductImage(
     productId: number,
     file: Express.Multer.File,
   ): Promise<string> {
     const fileExtension = file.originalname.split('.').pop();
-    const key = `products/${productId}.${fileExtension}`;
+    const uniqeId = uuid();
+    
+    const baseDir = `products/${productId}`
+    const key = `${baseDir}/${uniqeId}.${fileExtension}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -47,6 +51,7 @@ export class S3Service {
 
     try {
       await this.s3Client.send(command);
+
       const imageUrl = `https://${this.bucketName}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${key}`;
       this.logger.log(`Image uploaded successfully: ${imageUrl}`);
       return imageUrl;
@@ -58,23 +63,7 @@ export class S3Service {
 
 
   async deleteProductImage(productId: number): Promise<void> {
-    // search all possiple finnishings
-    const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-    
-    for (const ext of extensions) {
-      const key = `products/${productId}.${ext}`;
-      try {
-        const command = new DeleteObjectCommand({
-          Bucket: this.bucketName,
-          Key: key,
-        });
-        await this.s3Client.send(command);
-        this.logger.log(`Image deleted: ${key}`);
-      } catch (error) {
-        // continue even if the file doesn't exist
-        this.logger.warn(`Could not delete ${key}`, error.message);
-      }
-    }
+    this.logger.warn(`Soft delete activated for Product ID: ${productId}. Skipping physical image cleanup`);
   }
 
   

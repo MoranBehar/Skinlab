@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between, SelectQueryBuilder } from 'typeorm';
 
 // entities
 import { Order } from '../entities/order.entity';
@@ -24,6 +24,12 @@ type OrderItemType = {
     quantity: number;
     price_at_purchase: number;
 };
+
+interface AdminOrderFilters {
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+}
 
 @Injectable()
 export class OrdersService {
@@ -49,6 +55,8 @@ export class OrdersService {
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
   ) {}
+
+    // --- USER CRUD ---
 
   async createOrder(userId: number, createOrderDto: CreateOrderDto) {
     // Find user's shopping cart
@@ -261,31 +269,30 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
-    // Verify status exists
-    const status = await this.orderStatusRepository.findOne({
-      where: { status_id: updateStatusDto.status_id },
-    });
+    // Making shure the status change for user is canelation only
 
-    if (!status) {
-      throw new BadRequestException('Invalid status');
+    const cancelledStatus = await this.orderStatusRepository.findOne({
+        where: { status_name: 'canceled' }, 
+    });
+    
+    if (!cancelledStatus) {
+        throw new BadRequestException('Cancelled status definition is missing from the database.');
     }
 
-    // Update order status
-    order.status_id = updateStatusDto.status_id;
-    await this.ordersRepository.save(order);
+    if (updateStatusDto.status_id !== cancelledStatus.status_id) {
+        throw new BadRequestException('Unauthorized action. Users can only cancel their orders.');
+    }
 
-    // Create tracking entry
-    const tracking = this.orderTrackingRepository.create({
-      order_id: orderId,
-      status_id: updateStatusDto.status_id,
-      date: new Date(),
-      comments: updateStatusDto.comments || `Status updated to ${status.status_name}`,
+    const shippedStatus = await this.orderStatusRepository.findOne({
+        where: { status_name: 'shipped' }, 
     });
 
-    await this.orderTrackingRepository.save(tracking);
+    if (shippedStatus && order.status_id > shippedStatus.status_id) { 
+        throw new BadRequestException('Order cannot be cancelled once it has been arrived');
+    }
 
     // Return updated order
-    return this.getOrderById(orderId, userId);
+    return this.updateOrderStatusCore(orderId, updateStatusDto);
   }
 
 
@@ -357,5 +364,201 @@ export class OrdersService {
       } : null,
       items,
     };
+  }
+
+
+  // ----- ADMIN FUNCTIONS -----
+
+
+  private async updateOrderStatusCore(
+    orderId: number,
+    updateStatusDto: UpdateOrderStatusDto,
+  ) {
+    // Verify status exists
+    const status = await this.orderStatusRepository.findOne({
+      where: { status_id: updateStatusDto.status_id },
+    });
+
+    if (!status) {
+      throw new BadRequestException('Invalid status');
+    }
+
+    // Update order status
+    await this.ordersRepository.update(orderId, { status_id: updateStatusDto.status_id });
+
+    // Create tracking entry
+    const tracking = this.orderTrackingRepository.create({
+      order_id: orderId,
+      status_id: updateStatusDto.status_id,
+      date: new Date(),
+      comments: updateStatusDto.comments || `Status updated to ${status.status_name}`,
+    });
+
+    await this.orderTrackingRepository.save(tracking);
+
+    return this.getOrderByIdForAdmin(orderId);
+  }
+
+
+  async updateOrderStatusAdmin(
+    orderId: number,
+    updateStatusDto: UpdateOrderStatusDto,
+  ) {
+    const exists = await this.ordersRepository.exists({ where: { order_id: orderId } });
+    if (!exists) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+    
+    return this.updateOrderStatusCore(orderId, updateStatusDto);
+  }
+
+
+  async getOrderByIdForAdmin(id: number) {
+    const order = await this.ordersRepository.findOne({
+      where: { order_id: id },
+      relations: [
+        'user', 
+        'status', 
+        'shippingAddress', 
+        'shippingType',
+        'items', 
+        'items.product',
+        'items.product.images',
+      ],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    
+    //  Get tracking history
+    const tracking = await this.orderTrackingRepository.find({
+      where: { order_id: id },
+      relations: ['status'], 
+      order: { date: 'ASC' },
+    });
+    
+    const orderResponse = this.buildOrderResponse(order);
+    return {orderResponse, tracking };
+  }
+
+
+  async getAllOrdersForAdmin(filters: AdminOrderFilters) {
+    const queryBuilder = this.ordersRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.user', 'user') 
+      .leftJoinAndSelect('order.status', 'status') 
+      .leftJoinAndSelect('order.items', 'items') 
+      .leftJoinAndSelect('items.product', 'product') 
+      .leftJoinAndSelect('product.images', 'images') 
+      .leftJoinAndSelect('order.shippingAddress', 'address') 
+      .leftJoinAndSelect('order.shippingType', 'shippingType') 
+      .orderBy('order.date_placed', 'DESC');
+
+    if (filters.status) {
+      queryBuilder.andWhere('status.status_name = :status', { status: filters.status });
+    }
+    
+    if (filters.startDate && filters.endDate) {
+      queryBuilder.andWhere('order.date_placed BETWEEN :startDate AND :endDate', {
+        startDate: new Date(filters.startDate),
+        endDate: new Date(filters.endDate),
+      });
+    }
+
+    return await queryBuilder.getMany();
+  }
+
+
+  async getOrderStats() {
+    const totalOrders = await this.ordersRepository.count();
+    
+    const ordersByStatus = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select('status.status_name', 'status')
+      .addSelect('COUNT(order.order_id)', 'count')
+      .leftJoin('order.status', 'status')
+      .groupBy('status.status_name')
+      .getRawMany();
+      
+    const totalRevenue = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select('SUM(order.price)', 'total')
+      .getRawOne();
+      
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayOrders = await this.ordersRepository.count({
+      where: {
+        date_placed: Between(today, new Date()),
+      },
+    });
+    
+    const todayRevenue = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select('SUM(order.price)', 'total')
+      .where('order.date_placed >= :today', { today })
+      .getRawOne();
+      
+    return {
+      totalOrders,
+      ordersByStatus,
+      totalRevenue: parseFloat(totalRevenue?.total) || 0,
+      todayOrders,
+      todayRevenue: parseFloat(todayRevenue?.total) || 0,
+    };
+  }
+
+  
+  async getRevenueStats(period: 'day' | 'week' | 'month' | 'year') {
+    const now = new Date();    
+    let dateInterval: string;
+    
+    switch (period) {
+      case 'day': dateInterval = 'hour'; break; 
+      case 'week': dateInterval = 'day'; break;
+      case 'month': dateInterval = 'day'; break; 
+      case 'year': dateInterval = 'month'; break;
+      default: dateInterval = 'day';
+    }
+
+    const startOfPeriod = new Date();
+    startOfPeriod.setHours(0, 0, 0, 0);
+
+    if (period === 'week') {
+      startOfPeriod.setDate(startOfPeriod.getDate() - 7);
+    } else if (period === 'month') {
+      startOfPeriod.setMonth(startOfPeriod.getMonth() - 1);
+    } else if (period === 'year') {
+      startOfPeriod.setFullYear(startOfPeriod.getFullYear() - 1);
+    }
+    
+    const revenue = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select(`DATE_TRUNC('${dateInterval}', order.date_placed)`, 'date')
+      .addSelect('SUM(order.price)', 'revenue')
+      .addSelect('COUNT(order.order_id)', 'orders')
+      .where('order.date_placed >= :startDate', { startDate: startOfPeriod })
+      .groupBy(`DATE_TRUNC('${dateInterval}', order.date_placed)`)
+      .orderBy(`DATE_TRUNC('${dateInterval}', order.date_placed)`, 'ASC')
+      .getRawMany();
+      
+    return revenue;
+  }
+  
+  
+  async getRecentOrders(limit: number) {
+    return await this.ordersRepository.find({
+      relations: [
+        'user', 
+        'status', 
+        'items', 
+        'items.product',
+        'items.product.images',
+      ],
+      order: { date_placed: 'DESC' },
+      take: limit,
+    });
   }
 }

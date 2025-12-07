@@ -20,6 +20,8 @@ export class ProductsService {
     private s3Service: S3Service,
   ) {}
 
+  // -------- PUBLIC QUERIES (FILTERD BY IS_AVAILABLE = TRUE) --------
+
   // Getting all products with filters and sorting
   async findAll(filterDto: FilterProductsDto) {
     const {
@@ -44,27 +46,23 @@ export class ProductsService {
       .leftJoinAndSelect('product.product_type_rel', 'product_type_rel')
       .where('product.is_available = :is_available', { is_available: true });
 
-    // Filter by category
+    // Filter logic (category, skin type, target audience, product type, price range, search)
     if (category_id) {
       queryBuilder.andWhere('product.category_id = :category_id', { category_id });
     }
 
-    // Filter by skin type
     if (skin_type) {
       queryBuilder.andWhere('product.skin_type = :skin_type', { skin_type });
     }
 
-    // Filter by target audience
     if (target_audience) {
       queryBuilder.andWhere('product.target_audience = :target_audience', { target_audience });
     }
 
-    // Filter by product type
     if (product_type) {
       queryBuilder.andWhere('product.product_type = :product_type', { product_type });
     }
 
-    // Filter by price range
     if (min_price !== undefined && max_price !== undefined) {
       queryBuilder.andWhere('product.price BETWEEN :min_price AND :max_price', {
         min_price,
@@ -76,7 +74,6 @@ export class ProductsService {
       queryBuilder.andWhere('product.price <= :max_price', { max_price });
     }
 
-    // Search by name and description
     if (search) {
       queryBuilder.andWhere(
         '(product.name ILIKE :search OR product.description ILIKE :search)',
@@ -84,7 +81,7 @@ export class ProductsService {
       );
     }
 
-    // Sorting
+    // Sorting logic
     switch (sort_by) {
       case SortBy.PRICE_ASC:
         queryBuilder.orderBy('product.price', 'ASC');
@@ -123,79 +120,45 @@ export class ProductsService {
     };
   }
 
+  async getProductById(id: number) : Promise<Product> {
+    const product = await this.productsRepository.findOne({
+      where: {product_id : id},
+      relations: [
+        'images', 
+        'category', 
+        'skin_type_rel', 
+        'target_audience_rel', 
+        'product_type_rel'
+      ],
+    });
 
+    if(!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    return product;
+  }
+
+  // GET /products/:id
   async findOne(id: number): Promise<Product> {
     try {
-      const product = await this.productsRepository.findOne({
-        where: { product_id: id },
-        relations: ['images', 'category', 'skin_type_rel', 'target_audience_rel', 'product_type_rel'],
-      });
+      const product = await this.getProductById(id);
 
-      if (!product) {
+      if (!product.is_available) {
         throw new NotFoundException(`Product with ID ${id} not found`);
       }
 
       return product;
+
     } catch (error){
-        console.error('--- ERROR IN FINDONE ---');
-        console.error('Failed to retrieve product:', error);
-        console.error('--------------------------');
+        console.error('Failed to retrieve product: ', error);
 
         if (error instanceof NotFoundException) {
             throw error;
         }
 
-        throw new BadRequestException('Database error occurred while fetching product details.');
+        throw new BadRequestException('Database error occurred while fetching product details');
     }
-  }
-
-  
-  async create(createProductDto: CreateProductDto): Promise<Product> {
-    const product = this.productsRepository.create({
-      ...createProductDto,
-      creating_date: new Date(),
-    });
-
-    return await this.productsRepository.save(product);
-  }
-
- 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
-    const product = await this.findOne(id);
-
-    Object.assign(product, updateProductDto);
-    product.updating_date = new Date();
-
-    return await this.productsRepository.save(product);
-  }
-
-
-  async remove(id: number): Promise<void> {
-    const product = await this.findOne(id);
-    
-    // deleting photos from s3
-    await this.s3Service.deleteProductImage(id);
-
-    // Soft delete
-    product.deleting_date = new Date();
-    product.is_available = false;
-    await this.productsRepository.save(product);
-  }
-
-
-  async uploadImage(productId: number, file: Express.Multer.File): Promise<ProductImage> {
-    const product = await this.findOne(productId);
-
-    // upload to S3
-    const imageUrl = await this.s3Service.uploadProductImage(productId, file);
-
-    // save in db
-    const productImage = this.productImagesRepository.create({
-      product_id: productId,
-      image_path: imageUrl,
-    });
-
-    return await this.productImagesRepository.save(productImage);
   }
 
   // Getting all categories/skin types/etc. for filters
@@ -223,5 +186,125 @@ export class ProductsService {
       targetAudiences,
       productTypes,
     };
+  }
+
+  // -------- ADMIN CRUD --------
+
+  private async uploadAndSaveImages(productId, images) {
+    const uploadedImages = await Promise.all(
+        images.map((file) => this.s3Service.uploadProductImage(productId, file)),
+      );
+    
+    const productImageEntities = uploadedImages.map((url) =>
+      this.productImagesRepository.create({
+        product_id: productId,
+        image_path: url,
+      }),
+    );
+
+    await this.productImagesRepository.save(productImageEntities);
+  }
+  
+  async createProduct(
+    createProductDto: CreateProductDto,
+    images: Express.Multer.File[],
+  ): Promise<Product> {
+
+    // Creating new product
+    const product = this.productsRepository.create({
+      ...createProductDto,
+      is_available: true,
+      creating_date: new Date(),
+    });
+
+    const savedProduct = await this.productsRepository.save(product);
+
+    // upload to s3 and save in DB
+    await this.uploadAndSaveImages(savedProduct.product_id, images);
+
+    return await this.getProductById(savedProduct.product_id);
+  }
+
+ 
+  async updateProduct(
+    id: number, 
+    updateProductDto: UpdateProductDto,
+    images?: Express.Multer.File[],
+  ): Promise<Product> {
+    const product = await this.getProductById(id);
+
+    // Update product data
+    Object.assign(product, updateProductDto);
+    product.updating_date = new Date();
+    await this.productsRepository.save(product);
+
+    // if there are new images - upload to s3 and save in DB
+    if (images && images.length > 0) {
+      await this.uploadAndSaveImages(id, images);
+    }
+
+    return await this.getProductById(id);
+  }
+
+
+  async softDeleteProduct(id: number): Promise<{ success: boolean; message: string; product_id: number; }> {
+    const product = await this.getProductById(id);
+    
+    // Soft delete - mark as unavailable
+    product.is_available = false;
+    product.deleting_date = new Date(); 
+    await this.productsRepository.save(product);
+    
+    return {
+      success: true,
+      message: 'Product deleted successfully (soft delete)',
+      product_id: id,
+    };
+  }
+
+  
+  async getProductStats() {
+    const totalProducts = await this.productsRepository.count({
+      where: { is_available: true },
+    });
+
+    const unavailableProducts = await this.productsRepository.count({
+      where: { is_available: false },
+    });
+
+    const productsByCategory = await this.productsRepository 
+      .createQueryBuilder('product')
+      .select('category.category_name', 'category')
+      .addSelect('COUNT(product.product_id)', 'count')
+      .leftJoin('product.category', 'category') 
+      .where('product.is_available = :available', { available: true })
+      .groupBy('category.category_name')
+      .getRawMany();
+      
+    return {
+      totalProducts,
+      unavailableProducts,
+      productsByCategory,
+    };
+  }
+
+
+  async getAllProductsForAdmin(includeDeleted: boolean = false) {
+    const queryBuilder = this.productsRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.target_audience_rel', 'targetAudience') 
+      .leftJoinAndSelect('product.skin_type_rel', 'skinType') 
+      .leftJoinAndSelect('product.product_type_rel', 'productType') 
+      .orderBy('product.creating_date', 'DESC');
+
+    if (!includeDeleted) {
+      queryBuilder.where('product.is_available = :available', {
+        available: true,
+      });
+    }
+
+    return await queryBuilder.getMany();
   }
 }

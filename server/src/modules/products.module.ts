@@ -9,6 +9,7 @@ import { ProductCategory } from '../entities/productCategory.entity';
 import { TargetAudience } from '../entities/targetAudience.entity';
 import { SkinType } from '../entities/skinType.entity';
 import { ProductType } from '../entities/productType.entity';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { ProductType } from '../entities/productType.entity';
     ]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService, S3Service],
+  providers: [ProductsService, S3Service, RolesGuard],
   exports: [ProductsService, S3Service],
 })
 export class ProductsModule {}

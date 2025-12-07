@@ -12,6 +12,7 @@ import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
 import { OrderItem } from 'src/entities/orderItem.entity';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { OrderItem } from 'src/entities/orderItem.entity';
     ]),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, RolesGuard],
   exports: [OrdersService],
 })
 export class OrdersModule {}
