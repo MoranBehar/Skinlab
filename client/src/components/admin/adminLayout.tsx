@@ -11,7 +11,6 @@ export const AdminLayout: React.FC = () => {
     { path: '/admin/dashboard', icon: 'bi-speedometer2', label: 'Dashboard' },
     { path: '/admin/products', icon: 'bi-box-seam', label: 'Products' },
     { path: '/admin/orders', icon: 'bi-cart-check', label: 'Orders' },
-    { path: '/admin/customers', icon: 'bi-people', label: 'Customers' },
     { path: '/admin/analytics', icon: 'bi-graph-up', label: 'Analytics' },
   ];
 
@@ -93,32 +92,6 @@ export const AdminLayout: React.FC = () => {
               <span className="text-muted">
                 Welcome, <strong>Admin</strong>
               </span>
-            </div>
-            <div className="d-flex align-items-center gap-3">
-              <button className="btn btn-link text-decoration-none position-relative">
-                <i className="bi bi-bell fs-5 text-muted"></i>
-                <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                  style={{ fontSize: '0.6rem' }}
-                >
-                  3
-                </span>
-              </button>
-              <div className="vr"></div>
-              <div className="d-flex align-items-center">
-                <div
-                  className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
-                  style={{ width: '40px', height: '40px' }}
-                >
-                  <i className="bi bi-person-fill"></i>
-                </div>
-                <div>
-                  <div className="fw-semibold small">Admin User</div>
-                  <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                    Manager
-                  </div>
-                </div>
-              </div>
             </div>
           </Container>
         </Navbar>
