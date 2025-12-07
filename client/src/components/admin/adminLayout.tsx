@@ -1,9 +1,11 @@
 import React from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useAuth } from '../../contexts/authContext';
 
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -90,7 +92,7 @@ export const AdminLayout: React.FC = () => {
             <div className="d-flex align-items-center">
               <i className="bi bi-list fs-4 me-3 text-muted"></i>
               <span className="text-muted">
-                Welcome, <strong>Admin</strong>
+                Welcome, <strong>{user?.full_name || 'Admin'}</strong>
               </span>
             </div>
           </Container>
