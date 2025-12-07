@@ -8,6 +8,8 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
+  const isManager = isAuthenticated && user?.role_id === 1;
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -42,6 +44,12 @@ const MainLayout: React.FC = () => {
                     <CartIcon />
                   </Nav.Link>
                 </>
+              )}
+
+              {isManager && (
+                <Nav.Link onClick={() => navigate('/admin/dashboard')}> 
+                  Admin Dashboard
+                </Nav.Link>
               )}
             </Nav>
 

@@ -18,6 +18,7 @@ import CartPage from './pages/cartPage';
 import UserOrders from './pages/userOrdersPage';
 import OrderDetails from './pages/orderDetailsPage';
 import CheckoutPage from './pages/checkoutPage';
+import { AdminRoutes } from './components/route/admin/adminRoutes';
 
 const App: React.FC = () => {
   return (
@@ -78,6 +79,8 @@ const App: React.FC = () => {
 
           </Route>
 
+          <Route path="/admin/*" element={<AdminRoutes />} />
+          
           {/* 404 Not Found */}
           <Route path="*" element={<Navigate to="/products" replace />} />
         </Routes>
