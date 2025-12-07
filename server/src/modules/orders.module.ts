@@ -11,6 +11,7 @@ import { ShoppingCart } from '../entities/shoppingCart.entity';
 import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
+import { OrderItem } from 'src/entities/orderItem.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ProductImage } from '../entities/productImage.entity';
       ShoppingCartItem,
       Product,
       ProductImage,
+      OrderItem,
     ]),
   ],
   controllers: [OrdersController],

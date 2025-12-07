@@ -63,9 +63,9 @@ const HomePage: React.FC = () => {
               </Card.Text>
               <Button 
                 variant="outline-dark" 
-                disabled
+                onClick={() => navigate('/orders')}
               >
-                Coming Soon
+                Orders
               </Button>
             </Card.Body>
           </Card>

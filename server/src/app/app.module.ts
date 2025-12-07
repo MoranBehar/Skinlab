@@ -25,6 +25,7 @@ import { OrderStatus } from '../entities/orderStatus.entity';
 import { ShippingType } from '../entities/shippingType.entity';
 import { Order } from '../entities/order.entity';
 import { OrderTracking } from '../entities/orderTracking.entity';
+import { OrderItem } from 'src/entities/orderItem.entity';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { OrderTracking } from '../entities/orderTracking.entity';
           ShippingType,
           Order,
           OrderTracking,
+          OrderItem,
         ],
         synchronize: false, 
         logging: true, 

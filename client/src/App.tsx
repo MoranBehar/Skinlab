@@ -15,6 +15,9 @@ import ProductDetailPage from './pages/productDetailPage';
 import GoogleAuthSuccess from './components/googleAuthSuccess';
 import { CartProvider } from './contexts/cartContext';
 import CartPage from './pages/cartPage';
+import UserOrders from './pages/userOrdersPage';
+import OrderDetails from './pages/orderDetailsPage';
+import CheckoutPage from './pages/checkoutPage';
 
 const App: React.FC = () => {
   return (
@@ -56,6 +59,21 @@ const App: React.FC = () => {
             <Route path="cart" element={
                 <ProtectedRoute>
                     <CartPage />
+                </ProtectedRoute>  } />
+
+            <Route path="orders" element={
+                <ProtectedRoute>
+                    <UserOrders />
+                </ProtectedRoute>  } />
+            
+            <Route path="orders/:orderId" element={
+                <ProtectedRoute>
+                    <OrderDetails />
+                </ProtectedRoute>  } />
+
+            <Route path="checkout" element={
+                <ProtectedRoute>
+                    <CheckoutPage />
                 </ProtectedRoute>  } />
 
           </Route>

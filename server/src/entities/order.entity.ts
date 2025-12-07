@@ -5,6 +5,7 @@ import { ShoppingCart } from './shoppingCart.entity';
 import { ShippingType } from './shippingType.entity';
 import { ShippingAddress } from './shippingAddress.entity';
 import { OrderTracking } from './orderTracking.entity';
+import { OrderItem } from './orderItem.entity';
 
 @Entity({ schema: 'skinlab', name: 'orders' })
 export class Order {
@@ -61,4 +62,7 @@ export class Order {
 
   @OneToMany(() => OrderTracking, (tracking) => tracking.order)
   tracking: OrderTracking[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
+  items: OrderItem[];
 }

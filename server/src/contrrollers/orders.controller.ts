@@ -10,7 +10,6 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
-  BadRequestException,
 } from '@nestjs/common';
 import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto } from '../DTO/orders/createOrder.dto';
@@ -29,13 +28,13 @@ export class OrdersController {
     @Request() req,
     @Body() createOrderDto: CreateOrderDto,
   ) {
-    return this.ordersService.createOrder(req.user.userId, createOrderDto);
+    return this.ordersService.createOrder(req.user.user_id, createOrderDto);
   }
 
   // GET /orders
   @Get()
   async getUserOrders(@Request() req) {
-    return this.ordersService.getUserOrders(req.user.userId);
+    return this.ordersService.getUserOrders(req.user.user_id);
   }
 
   // GET /orders/:id
@@ -44,7 +43,7 @@ export class OrdersController {
     @Request() req,
     @Param('id', ParseIntPipe) orderId: number,
   ) {
-    return this.ordersService.getOrderById(orderId, req.user.userId);
+    return this.ordersService.getOrderById(orderId, req.user.user_id);
   }
 
   // GET /orders/:id/tracking
@@ -53,12 +52,11 @@ export class OrdersController {
     @Request() req,
     @Param('id', ParseIntPipe) orderId: number,
   ) {
-    return this.ordersService.getOrderTracking(orderId, req.user.userId);
+    return this.ordersService.getOrderTracking(orderId, req.user.user_id);
   }
 
   /**
    * PATCH /orders/:id/status
-   * Only for managers (role_id = 1)
    */
   @Patch(':id/status')
   async updateOrderStatus(
@@ -66,15 +64,9 @@ export class OrdersController {
     @Param('id', ParseIntPipe) orderId: number,
     @Body() updateStatusDto: UpdateOrderStatusDto,
   ) {
-
-    // Checking that the user is an admin
-    if (req.user.roleId !== 1) {
-        throw new BadRequestException('Only managers can update status');
-    }
-
     return this.ordersService.updateOrderStatus(
       orderId,
-      req.user.userId,
+      req.user.user_id,
       updateStatusDto,
     );
   }

@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+// entities
 import { Order } from '../entities/order.entity';
 import { OrderTracking } from '../entities/orderTracking.entity';
 import { OrderStatus } from '../entities/orderStatus.entity';
@@ -10,8 +12,18 @@ import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
 import { ShippingAddress } from '../entities/shippingAddress.entity';
+import { OrderItem } from 'src/entities/orderItem.entity';
+
+// DTO
 import { CreateOrderDto } from '../DTO/orders/createOrder.dto';
 import { UpdateOrderStatusDto } from '../DTO/orders/updateOrderStatus.dto';
+
+
+type OrderItemType = {
+    product_id: number;
+    quantity: number;
+    price_at_purchase: number;
+};
 
 @Injectable()
 export class OrdersService {
@@ -34,9 +46,10 @@ export class OrdersService {
     private productImagesRepository: Repository<ProductImage>,
     @InjectRepository(ShippingAddress)
     private shippingAddressRepository: Repository<ShippingAddress>,
+    @InjectRepository(OrderItem)
+    private orderItemsRepository: Repository<OrderItem>,
   ) {}
 
-  // Create a new order from user's shopping cart
   async createOrder(userId: number, createOrderDto: CreateOrderDto) {
     // Find user's shopping cart
     const cart = await this.shoppingCartRepository.findOne({
@@ -58,6 +71,8 @@ export class OrdersService {
 
     // Calculate total price and validate products
     let totalPrice = 0;
+    const orderItems : OrderItemType[] = [];
+
     for (const item of cartItems) {
       const product = await this.productsRepository.findOne({
         where: { product_id: item.product_id },
@@ -71,7 +86,16 @@ export class OrdersService {
         throw new BadRequestException(`Product ${product.name} is not available`);
       }
 
-      totalPrice += Number(product.price) * item.quantity;
+      const discountFactor = (product.discount_percentage || 0) / 100;
+      const finalProductPrice = Number(product.price) * (1 - discountFactor);
+
+      totalPrice += finalProductPrice * item.quantity;
+
+      orderItems.push({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price_at_purchase: finalProductPrice,
+      });
     }
 
     // Verify shipping type exists
@@ -112,6 +136,19 @@ export class OrdersService {
 
     const savedOrder = await this.ordersRepository.save(order);
 
+    const saveOrderItems = orderItems.map(itemData => {
+      const orderItem = this.orderItemsRepository.create({
+        order_id: savedOrder.order_id,
+        product_id: itemData.product_id,
+        quantity: itemData.quantity,
+        price_at_purchase: itemData.price_at_purchase,
+      })
+
+      return this.orderItemsRepository.save(orderItem);
+    });
+
+    await Promise.all(saveOrderItems);
+
     // Create initial order tracking entry
     const tracking = this.orderTrackingRepository.create({
       order_id: savedOrder.order_id,
@@ -123,9 +160,11 @@ export class OrdersService {
     await this.orderTrackingRepository.save(tracking);
 
     // Clear the shopping cart
-    await this.cartItemsRepository.delete({
+    const deleteResult = await this.cartItemsRepository.delete({
       shopping_cart_id: cart.shopping_cart_id,
     });
+
+    console.log(`[orderService] cart id ${cart.shopping_cart_id} cleard. affected rows: ${deleteResult.affected}`);
 
     // Return the created order with full details
     return this.getOrderById(savedOrder.order_id, userId);
@@ -270,14 +309,14 @@ export class OrdersService {
       });
     }
 
-    // Get cart items
-    const cartItems = await this.cartItemsRepository.find({
-      where: { shopping_cart_id: order.shopping_cart_id },
+    // Get order items
+    const orderItems = await this.orderItemsRepository.find({
+      where: { order_id: order.order_id },
     });
 
     // Build items array with product details
     const items = await Promise.all(
-      cartItems.map(async (item) => {
+      orderItems.map(async (item) => {
         const product = await this.productsRepository.findOne({
           where: { product_id: item.product_id },
         });
@@ -290,7 +329,7 @@ export class OrdersService {
           product_id: item.product_id,
           product_name: product?.name || 'Unknown Product',
           quantity: item.quantity,
-          price: Number(product?.price || 0),
+          price: Number(item.price_at_purchase || product?.price || 0),
           image_path: image?.image_path,
         };
       })

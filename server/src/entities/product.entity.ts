@@ -5,6 +5,7 @@ import { SkinType } from './skinType.entity';
 import { ProductType } from './productType.entity';
 import { ProductImage } from './productImage.entity';
 import { ShoppingCartItem } from './shoppingCartItem.entity';
+import { OrderItem } from './orderItem.entity';
 
 @Entity({ schema: 'skinlab', name: 'products' })
 export class Product {
@@ -75,4 +76,7 @@ export class Product {
 
   @OneToMany(() => ShoppingCartItem, (item) => item.product)
   cart_items: ShoppingCartItem[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
+  order_items: OrderItem[]; 
 }

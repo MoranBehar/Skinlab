@@ -16,7 +16,7 @@ const CartPage: React.FC = () => {
       <Container className="py-5">
         <Alert variant="warning">
           <Alert.Heading>Please Login</Alert.Heading>
-          <p>You need to be logged in to view your cart.</p>
+          <p>You need to be logged in to view your cart</p>
           <Button variant="dark" onClick={() => navigate('/login')}>
             Go to Login
           </Button>
