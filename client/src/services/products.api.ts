@@ -38,5 +38,5 @@ export const productsAPI = {
   getFilterOptions: async (): Promise<FilterOptions> => {
     const response = await api.get<FilterOptions>('/products/filters/options');
     return response.data;
-  },
+  },  
 };

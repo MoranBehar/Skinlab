@@ -1,17 +1,35 @@
-export interface Order {
-  order_id: number;
-  user: { full_name: string; email: string };
-  status: { status_id: number; status_name: string };
-  date_placed: string;
-  price: number;
-  shoppingCart: {
-    items: Array<{
-      product: { name: string };
-      quantity: number;
-    }>;
-  };
-}
+import { OrderItem, OrderTracking, ShippingAddress } from "./order.types";
 
+// export interface AdminOrder {
+//   order_id: number;
+//   user_id: number;
+//   status_id: number;
+//   status_name: string;
+//   date_placed: string;
+//   price: number;
+//   shipping_type_id: number;
+//   shipping_type_name: string;
+//   credit_card_brand?: string;
+//   credit_card_last_four_digits?: string;
+//   shipping_address?: {
+//     address_id: number;
+//     address: string;
+//     apartment_number?: string;
+//     floor_number?: string;
+//     city: string;
+//     phone_number: string;
+//     comments?: string;
+//   } | null;
+//   items: {
+//     product_id: number;
+//     product_name: string;
+//     quantity: number;
+//     price: number;
+//     image_path?: string | null;
+//   }[];
+// }
+
+// export type AdminOrderItem = OrderItem;
 
 export interface OrderDetail {
   order_id: number;
@@ -19,17 +37,15 @@ export interface OrderDetail {
   status: { status_id: number; status_name: string };
   date_placed: string;
   price: number;
-  shoppingCart: {
-    items: Array<{
-      product: {
-        product_id: number;
-        name: string;
-        price: number;
-        images: Array<{ image_path: string }>;
-      };
-      quantity: number;
-    }>;
-  };
+  items: Array<{
+    product: {
+      product_id: number;
+      name: string;
+      price: number;
+      images: Array<{ image_path: string }>;
+    };
+    quantity: number;
+  }>;
   shippingAddress: {
     address: string;
     apartment_number: number;
@@ -46,6 +62,11 @@ export interface OrderDetail {
     date: string;
     comments?: string;
   }>;
+}
+
+export interface AdminOrderDetailApiResponse {
+    orderResponse: OrderDetail;
+    tracking: OrderTracking[];
 }
 
 export interface OrderStats {
@@ -81,4 +102,70 @@ export interface ProductFormData {
   how_to_use: string;
   discount_percentage?: number;
   is_available: boolean;
+}
+
+
+//------------------------------
+
+export interface AdminOrderItem {
+  product_id: number;
+  product_name: string;
+  quantity: number;
+  price: number;
+  image_path: string | null;
+}
+
+// Shipping address
+export interface AdminOrderShippingAddress {
+  address_id: number;
+  address: string;
+  apartment_number?: string | null;
+  floor_number?: string | null;
+  city: string;
+  phone_number: string;
+  comments?: string | null;
+}
+
+// Shipping type
+export interface AdminOrderShippingType {
+  shipping_type_id: number;
+  shipping_type_name: string;
+}
+
+// Order status
+export interface AdminOrderStatus {
+  status_id: number;
+  status_name: string;
+}
+
+// User info
+export interface AdminOrderUser {
+  user_id: number;
+  full_name: string;
+  email: string;
+  role_id: number;
+}
+
+// Tracking entry
+export interface AdminOrderTracking {
+  order_id: number;
+  status_id: number;
+  status_name: string;
+  date: string | Date;
+  comments?: string;
+}
+
+// Main order type
+export interface AdminOrder {
+  order_id: number;
+  user: AdminOrderUser | null;
+  status: AdminOrderStatus | null;
+  date_placed: string | Date;
+  price: number;
+  shipping_type: AdminOrderShippingType | null;
+  credit_card_brand: string;
+  credit_card_last_four_digits: string;
+  shipping_address: AdminOrderShippingAddress | null;
+  items: AdminOrderItem[];
+  tracking?: AdminOrderTracking[]; 
 }

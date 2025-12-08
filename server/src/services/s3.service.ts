@@ -45,8 +45,7 @@ export class S3Service {
       Bucket: this.bucketName,
       Key: key,
       Body: file.buffer,
-      ContentType: file.mimetype,
-      ACL: 'public-read',
+      ContentType: file.mimetype
     });
 
     try {

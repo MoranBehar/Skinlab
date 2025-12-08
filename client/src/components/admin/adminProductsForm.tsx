@@ -26,6 +26,7 @@ export const AdminProductForm: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false); 
 
   useEffect(() => {
     if (isEditMode) {
@@ -35,22 +36,31 @@ export const AdminProductForm: React.FC = () => {
 
   const fetchProduct = async () => {
     try {
+      setIsLoadingProduct(true);
       const product = await adminApi.getProductById(parseInt(id!)) as Product;
+      console.log('Fetched product:', product);
+
       setFormData({
         name: product.name,
         description: product.description,
-        category_id: (product as any).product.category_id,
+        category_id: product.category.category_id,
         price: product.price,
-        target_audience: (product as any).product.target_audience,
-        skin_type: (product as any).product.skin_type,
-        product_type: (product as any).product.product_type,
+        target_audience: product.target_audience_rel.audience_id,
+        skin_type: product.skin_type_rel.skin_type_id,
+        product_type: product.product_type_rel.product_type_id,
         how_to_use: product.how_to_use,
         discount_percentage: product.discount_percentage,
         is_available: product.is_available,
       });
-      setPreviewImages(product.images.map((img: any) => img.image_path));
+
+      if (product.images && product.images.length > 0) {
+        setPreviewImages(product.images.map((img: any) => img.image_path));
+      }
+
     } catch (error) {
       console.error('Failed to fetch product:', error);
+    } finally {
+      setIsLoadingProduct(false);
     }
   };
 

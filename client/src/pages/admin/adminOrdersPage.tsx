@@ -12,13 +12,13 @@ import {
   InputGroup,
 } from 'react-bootstrap';
 import { adminApi } from '../../services/admin.api';
-import { Order } from '../../types/admin.types';
+import { AdminOrder } from '../../types/admin.types';
 
 export const AdminOrders: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState<number>(1);
   const [statusComment, setStatusComment] = useState('');
@@ -35,8 +35,11 @@ export const AdminOrders: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
-      const data = await adminApi.getAllOrders();
-      setOrders(data as Order[]);
+      const data = await adminApi.getAllOrders();  
+      console.log('RAW DATA FROM API:', data);   
+
+      setOrders(data);
+      setFilteredOrders(data);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
     } finally {
@@ -48,7 +51,7 @@ export const AdminOrders: React.FC = () => {
     let filtered = orders;
 
     if (filterStatus !== 'all') {
-      filtered = filtered.filter(order => order.status.status_name === filterStatus);
+      filtered = filtered.filter(order => order.status.status_name.toLowerCase() === filterStatus.toLowerCase());
     }
 
     if (searchTerm) {
@@ -63,7 +66,7 @@ export const AdminOrders: React.FC = () => {
     setFilteredOrders(filtered);
   };
 
-  const handleStatusChange = (order: Order) => {
+  const handleStatusChange = (order: AdminOrder) => {
     setSelectedOrder(order);
     setNewStatus(order.status.status_id);
     setStatusComment('');
@@ -176,7 +179,7 @@ export const AdminOrders: React.FC = () => {
                 <div>
                   <p className="text-muted mb-1 small">Shipped</p>
                   <h4 className="fw-bold mb-0">
-                    {orders.filter(o => o.status.status_name === 'shipped').length}
+                    {orders.filter(order => order.status.status_name === 'shipped').length}
                   </h4>
                 </div>
                 <div className="bg-info bg-opacity-10 p-3 rounded">
@@ -193,7 +196,7 @@ export const AdminOrders: React.FC = () => {
                 <div>
                   <p className="text-muted mb-1 small">Delivered</p>
                   <h4 className="fw-bold mb-0">
-                    {orders.filter(o => o.status.status_name === 'delivered').length}
+                    {orders.filter(order => order.status.status_name === 'delivered').length}
                   </h4>
                 </div>
                 <div className="bg-success bg-opacity-10 p-3 rounded">
@@ -210,7 +213,7 @@ export const AdminOrders: React.FC = () => {
                 <div>
                   <p className="text-muted mb-1 small">Canceled</p>
                   <h4 className="fw-bold mb-0">
-                    {orders.filter(o => o.status.status_name === 'canceled').length}
+                    {orders.filter(order => order.status.status_name === 'canceled').length}
                   </h4>
                 </div>
                 <div className="bg-danger bg-opacity-10 p-3 rounded">
@@ -256,7 +259,7 @@ export const AdminOrders: React.FC = () => {
                           {new Date(order.date_placed).toLocaleDateString('he-IL')}
                         </td>
                         <td className="align-middle">
-                          {order.shoppingCart.items.length} items
+                          {order.items?.length} items
                         </td>
                         <td className="align-middle">
                           <span className="fw-bold">₪{Number(order.price).toFixed(2)}</span>
@@ -274,6 +277,7 @@ export const AdminOrders: React.FC = () => {
                             href={`/admin/orders/${order.order_id}`}
                           >
                             <i className="bi bi-eye"></i>
+                            Order Details
                           </Button>
                           <Button
                             variant="outline-success"
@@ -281,6 +285,7 @@ export const AdminOrders: React.FC = () => {
                             onClick={() => handleStatusChange(order)}
                           >
                             <i className="bi bi-pencil-square"></i>
+                            Update Status
                           </Button>
                         </td>
                       </tr>

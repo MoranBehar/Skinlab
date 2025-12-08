@@ -10,7 +10,7 @@ export class OrderTracking {
   @Column({ type: 'integer' })
   status_id: number;
 
-  @PrimaryColumn({ type: 'date' })
+  @PrimaryColumn({ type: 'timestamp' })
   date: Date;
 
   @Column({ type: 'text', nullable: true })

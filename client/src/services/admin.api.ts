@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { AdminOrder } from '../types/admin.types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
@@ -30,7 +31,8 @@ export const adminProductsApi = {
 
   createProduct: async (formData: FormData) => {
     const token = localStorage.getItem('access_token');
-    const response = await axios.post(
+    const api = createAuthInstance();
+    const response = await api.post(
       `${API_BASE_URL}/products/admin/create`,
       formData,
       {
@@ -45,7 +47,8 @@ export const adminProductsApi = {
 
   updateProduct: async (id: number, formData: FormData) => {
     const token = localStorage.getItem('access_token');
-    const response = await axios.put(
+    const api = createAuthInstance();
+    const response = await api.put(
       `${API_BASE_URL}/products/admin/${id}`,
       formData,
       {
@@ -77,24 +80,24 @@ export const adminOrdersApi = {
     status?: string;
     startDate?: string;
     endDate?: string;
-  }) => {
+  }): Promise<AdminOrder[]> => {
     const api = createAuthInstance();
-    const response = await api.get('/orders/admin/all', { params: filters });
+    const response = await api.get<AdminOrder[]>('/orders/admin/all', { params: filters });
     return response.data;
   },
 
-  getOrderById: async (id: number) => {
+  getOrderById: async (id: number): Promise<{orderResponse, tracking}> => {
     const api = createAuthInstance();
-    const response = await api.get(`/orders/admin/${id}`);
+    const response = await api.get<{orderResponse, tracking}>(`/orders/admin/${id}`);
     return response.data;
   },
 
   updateOrderStatus: async (
     id: number,
     data: { status_id: number; comments?: string }
-  ) => {
+  ): Promise<{orderResponse, tracking}> => {
     const api = createAuthInstance();
-    const response = await api.put(`/orders/admin/${id}/status`, data);
+    const response = await api.patch<{orderResponse, tracking}>(`/orders/admin/${id}/status`, data);
     return response.data;
   },
 
@@ -106,15 +109,15 @@ export const adminOrdersApi = {
 
   getRevenueStats: async (period: 'day' | 'week' | 'month' | 'year') => {
     const api = createAuthInstance();
-    const response = await api.get('/orders/admin/revenue', {
+    const response = await api.get<{ date, revenue, orders }[]>('/orders/admin/revenue', {
       params: { period },
     });
     return response.data;
   },
 
-  getRecentOrders: async (limit: number = 10) => {
+  getRecentOrders: async (limit: number = 10): Promise<AdminOrder[]> => {
     const api = createAuthInstance();
-    const response = await api.get('/orders/admin/recent', {
+    const response = await api.get<AdminOrder[]>('/orders/admin/recent', {
       params: { limit },
     });
     return response.data;

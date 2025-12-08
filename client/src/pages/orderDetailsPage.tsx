@@ -67,7 +67,7 @@ const OrderDetails: React.FC = () => {
     );
   }
 
-  const canCancel = order.status_name.toLowerCase() === 'shipped';
+  const canCancel = order.status.status_name.toLowerCase() === 'shipped';
 
   return (
     <div className="container mt-4 mb-5">
@@ -90,7 +90,7 @@ const OrderDetails: React.FC = () => {
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4 className="mb-0">Order #{order.order_id}</h4>
-                <OrderStatusBadge statusName={order.status_name} />
+                <OrderStatusBadge statusName={order.status.status_name} />
               </div>
               <p className="text-muted mb-4">
                 <i className="bi bi-calendar3 me-2"></i>
@@ -214,7 +214,7 @@ const OrderDetails: React.FC = () => {
               </h6>
               <p className="mb-2 text-capitalize">
                 <i className="bi bi-box-seam me-2 text-muted"></i>
-                {order.shipping_type_name.replace(/_/g, ' ')}
+                {order.shipping_type.shipping_type_name.replace(/_/g, ' ')}
               </p>
               {order.shipping_address && (
                 <div className="mt-3 p-3 bg-light rounded">

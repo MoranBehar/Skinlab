@@ -1,12 +1,10 @@
 export interface Order {
   order_id: number;
   user_id: number;
-  status_id: number;
-  status_name: string;
+  status: Status;
   date_placed: string;
   price: number;
-  shipping_type_id: number;
-  shipping_type_name: string;
+  shipping_type: ShippingType;
   credit_card_brand: string;
   credit_card_last_four_digits: string;
   shipping_address: ShippingAddress | null;
@@ -19,6 +17,16 @@ export interface OrderItem {
   quantity: number;
   price: number;
   image_path?: string;
+}
+
+export interface ShippingType {
+  shipping_type_id: number
+  shipping_type_name: string
+}
+
+export interface Status {
+  status_id: number
+  status_name: string
 }
 
 export interface ShippingAddress {

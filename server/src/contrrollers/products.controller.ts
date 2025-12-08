@@ -35,7 +35,7 @@ export class ProductsController {
 
   // -------- ADMIN ROUTES (ROLE_ID = 1) --------
 
-  @Post()
+  @Post('admin/create')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(1)
   @UseInterceptors(FilesInterceptor('images', 5))

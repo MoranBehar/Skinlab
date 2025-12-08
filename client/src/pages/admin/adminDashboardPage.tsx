@@ -200,7 +200,7 @@ export const AdminDashboard: React.FC = () => {
             <Card.Body>
               <Row className="g-3">
                 <Col md={3}>
-                  <a href="/admin/products/new" className="btn btn-primary w-100">
+                  <a href="/admin/products/create" className="btn btn-primary w-100">
                     <i className="bi bi-plus-circle me-2"></i>
                     Add New Product
                   </a>

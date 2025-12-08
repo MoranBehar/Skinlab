@@ -7,9 +7,9 @@ interface OrderListProps {
   orders: Order[];
 }
 
-
 const OrderList: React.FC<OrderListProps> = ({ orders }) => {
   const navigate = useNavigate();
+  console.log('my order data: ', orders);
 
   
   const formatDate = (dateString: string): string => {
@@ -63,7 +63,7 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
 
               {/* Status Badge */}
               <div className="col-md-2 mb-2 mb-md-0">
-                <OrderStatusBadge statusName={order.status_name} />
+                <OrderStatusBadge statusName={order.status.status_name} />
               </div>
 
               {/* Number of Items */}
@@ -86,7 +86,7 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
               <div className="col-md-2 mb-2 mb-md-0">
                 <small className="text-muted d-block">Shipping</small>
                 <small className="text-capitalize">
-                  {order.shipping_type_name.replace(/_/g, ' ')}
+                  {order.shipping_type.shipping_type_name.replace(/_/g, ' ')}
                 </small>
               </div>
 

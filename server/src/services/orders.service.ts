@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, SelectQueryBuilder } from 'typeorm';
+import { Repository, Between, SelectQueryBuilder, In } from 'typeorm';
 
 // entities
 import { Order } from '../entities/order.entity';
@@ -73,18 +73,26 @@ export class OrdersService {
       where: { shopping_cart_id: cart.shopping_cart_id },
     });
 
-    if (cartItems.length === 0) {
+    if (!cartItems || cartItems.length === 0) {
       throw new BadRequestException('Cannot create order with empty cart');
     }
 
+    // load all needed products + their images
+    const productIds = cartItems.map(cartItem => cartItem.product_id);
+    const products = await this.productsRepository.find({
+      where: { product_id: In(productIds) },
+      relations: ['images'],
+    });
+
+    const productMap = new Map<number, Product>();
+    products.forEach(p => productMap.set(Number(p.product_id), p));
+
     // Calculate total price and validate products
     let totalPrice = 0;
-    const orderItems : OrderItemType[] = [];
+    const orderItemsPayload : OrderItemType[] = [];
 
     for (const item of cartItems) {
-      const product = await this.productsRepository.findOne({
-        where: { product_id: item.product_id },
-      });
+      const product = productMap.get(Number(item.product_id));
 
       if (!product) {
         throw new BadRequestException(`Product ${item.product_id} not found`);
@@ -96,12 +104,11 @@ export class OrdersService {
 
       const discountFactor = (product.discount_percentage || 0) / 100;
       const finalProductPrice = Number(product.price) * (1 - discountFactor);
+      totalPrice += finalProductPrice * Number(item.quantity);
 
-      totalPrice += finalProductPrice * item.quantity;
-
-      orderItems.push({
-        product_id: item.product_id,
-        quantity: item.quantity,
+      orderItemsPayload.push({
+        product_id: Number(item.product_id),
+        quantity: Number(item.quantity),
         price_at_purchase: finalProductPrice,
       });
     }
@@ -144,7 +151,7 @@ export class OrdersService {
 
     const savedOrder = await this.ordersRepository.save(order);
 
-    const saveOrderItems = orderItems.map(itemData => {
+    const saveOrderItems = orderItemsPayload.map(itemData => {
       const orderItem = this.orderItemsRepository.create({
         order_id: savedOrder.order_id,
         product_id: itemData.product_id,
@@ -182,6 +189,14 @@ export class OrdersService {
   async getUserOrders(userId: number) {
     const orders = await this.ordersRepository.find({
       where: { user_id: userId },
+      relations: [
+        'status',
+        'shipping_type',
+        'shipping_address',
+        'items',
+        'items.product',
+        'items.product.images',
+      ],
       order: { date_placed: 'DESC' },
     });
 
@@ -202,6 +217,14 @@ export class OrdersService {
         order_id: orderId,
         user_id: userId 
       },
+      relations: [
+        'status',
+        'shipping_type',
+        'shipping_address',
+        'items',
+        'items.product',
+        'items.product.images',
+      ],
     });
 
     if (!order) {
@@ -228,27 +251,18 @@ export class OrdersService {
     // Get tracking history
     const trackingHistory = await this.orderTrackingRepository.find({
       where: { order_id: orderId },
+      relations: ['status'],
       order: { date: 'ASC' },
     });
 
-    // Build response with status names
-    const trackingWithDetails = await Promise.all(
-      trackingHistory.map(async (track) => {
-        const status = await this.orderStatusRepository.findOne({
-          where: { status_id: track.status_id },
-        });
-
-        return {
-          order_id: track.order_id,
-          status_id: track.status_id,
-          status_name: status?.status_name || 'unknown',
-          date: track.date,
-          comments: track.comments,
-        };
-      })
-    );
-
-    return trackingWithDetails;
+  
+    return trackingHistory.map(track => ({
+      order_id: track.order_id,
+      status_id: track.status_id,
+      status_name: track.status?.status_name || 'unknown',
+      date: track.date,
+      comments: track.comments,
+    }));
   }
 
   
@@ -270,24 +284,27 @@ export class OrdersService {
     }
 
     // Making shure the status change for user is canelation only
-
     const cancelledStatus = await this.orderStatusRepository.findOne({
         where: { status_name: 'canceled' }, 
     });
     
     if (!cancelledStatus) {
-        throw new BadRequestException('Cancelled status definition is missing from the database.');
+        throw new BadRequestException('Cancelled status definition is missing from the database');
     }
 
     if (updateStatusDto.status_id !== cancelledStatus.status_id) {
-        throw new BadRequestException('Unauthorized action. Users can only cancel their orders.');
+        throw new BadRequestException('Unauthorized action. Users can only cancel their orders');
     }
 
     const shippedStatus = await this.orderStatusRepository.findOne({
         where: { status_name: 'shipped' }, 
     });
 
-    if (shippedStatus && order.status_id > shippedStatus.status_id) { 
+    if(!shippedStatus) {
+      throw new BadRequestException('Shipped status definition is missing from the database');
+    }
+
+    if (order.status_id > shippedStatus.status_id) { 
         throw new BadRequestException('Order cannot be cancelled once it has been arrived');
     }
 
@@ -297,70 +314,50 @@ export class OrdersService {
 
 
   // Build complete order response with all related data
-  private async buildOrderResponse(order: Order) {
-    // Get order status
-    const status = await this.orderStatusRepository.findOne({
-      where: { status_id: order.status_id },
+  private buildOrderResponse(order: Order) {
+    const items = (order.items || []).map(item => {
+      const product = (item as any).product as Product | undefined;
+
+      // choose first image_path if exists
+      const image_path = product?.images && product.images.length > 0 ? product.images[0].image_path : null;
+
+      return {
+        product_id: item.product_id,
+        product_name: product?.name || 'Unknown Product',
+        quantity: Number(item.quantity),
+        price: Number(item.price_at_purchase || product?.price || 0),
+        image_path,
+      };
     });
-
-    // Get shipping type
-    const shippingType = await this.shippingTypeRepository.findOne({
-      where: { type_id: order.shipping_type_id },
-    });
-
-    // Get shipping address if exists
-    let shippingAddress: ShippingAddress | null = null;
-    if (order.shipping_address_id) {
-      shippingAddress = await this.shippingAddressRepository.findOne({
-        where: { address_id: order.shipping_address_id },
-      });
-    }
-
-    // Get order items
-    const orderItems = await this.orderItemsRepository.find({
-      where: { order_id: order.order_id },
-    });
-
-    // Build items array with product details
-    const items = await Promise.all(
-      orderItems.map(async (item) => {
-        const product = await this.productsRepository.findOne({
-          where: { product_id: item.product_id },
-        });
-
-        const image = await this.productImagesRepository.findOne({
-          where: { product_id: item.product_id },
-        });
-
-        return {
-          product_id: item.product_id,
-          product_name: product?.name || 'Unknown Product',
-          quantity: item.quantity,
-          price: Number(item.price_at_purchase || product?.price || 0),
-          image_path: image?.image_path,
-        };
-      })
-    );
 
     return {
       order_id: order.order_id,
-      user_id: order.user_id,
-      status_id: order.status_id,
-      status_name: status?.status_name || 'unknown',
+      user: order.user ? {
+        user_id: order.user.user_id,
+        full_name: order.user.full_name,
+        email: order.user.email,
+        role_id: order.user.role_id,
+      } : null,
+      status: order.status ? {  
+        status_id: order.status.status_id,
+        status_name: order.status.status_name,
+    } : null,
       date_placed: order.date_placed,
       price: Number(order.price),
-      shipping_type_id: order.shipping_type_id,
-      shipping_type_name: shippingType?.type_name || 'unknown',
+      shipping_type: order.shipping_type ? {
+        shipping_type_id: order.shipping_type.type_id,
+        shipping_type_name: order.shipping_type.type_name,
+    } : null,
       credit_card_brand: order.credit_card_brand,
       credit_card_last_four_digits: order.credit_card_last_four_digits,
-      shipping_address: shippingAddress ? {
-        address_id: shippingAddress.address_id,
-        address: shippingAddress.address,
-        apartment_number: shippingAddress.apartment_number,
-        floor_number: shippingAddress.floor_number,
-        city: shippingAddress.city,
-        phone_number: shippingAddress.phone_number,
-        comments: shippingAddress.comments,
+      shipping_address: order.shipping_address ? {
+        address_id: order.shipping_address.address_id,
+        address: order.shipping_address.address,
+        apartment_number: order.shipping_address.apartment_number,
+        floor_number: order.shipping_address.floor_number,
+        city: order.shipping_address.city,
+        phone_number: order.shipping_address.phone_number,
+        comments: order.shipping_address.comments,
       } : null,
       items,
     };
@@ -419,11 +416,13 @@ export class OrdersService {
       relations: [
         'user', 
         'status', 
-        'shippingAddress', 
-        'shippingType',
+        'shipping_address', 
+        'shipping_type',
         'items', 
         'items.product',
         'items.product.images',
+        'tracking',
+        'tracking.status',
       ],
     });
 
@@ -432,14 +431,16 @@ export class OrdersService {
     }
     
     //  Get tracking history
-    const tracking = await this.orderTrackingRepository.find({
-      where: { order_id: id },
-      relations: ['status'], 
-      order: { date: 'ASC' },
-    });
-    
     const orderResponse = this.buildOrderResponse(order);
-    return {orderResponse, tracking };
+    const tracking = (order.tracking || []).map(t => ({
+      order_id: t.order_id,
+      status_id: t.status_id,
+      status_name: (t.status && (t.status as any).status_name) || 'unknown',
+      date: t.date,
+      comments: t.comments,
+    }));
+
+    return { orderResponse, tracking };
   }
 
 
@@ -451,8 +452,8 @@ export class OrdersService {
       .leftJoinAndSelect('order.items', 'items') 
       .leftJoinAndSelect('items.product', 'product') 
       .leftJoinAndSelect('product.images', 'images') 
-      .leftJoinAndSelect('order.shippingAddress', 'address') 
-      .leftJoinAndSelect('order.shippingType', 'shippingType') 
+      .leftJoinAndSelect('order.shipping_address', 'address') 
+      .leftJoinAndSelect('order.shipping_type', 'shippingType') 
       .orderBy('order.date_placed', 'DESC');
 
     if (filters.status) {
@@ -466,7 +467,25 @@ export class OrdersService {
       });
     }
 
-    return await queryBuilder.getMany();
+    const orders = await queryBuilder.getMany();
+    const result = orders.map(order => this.buildOrderResponse(order));
+    return result;
+  }
+
+
+  async getRecentOrders(limit: number) {
+    const orders = await this.ordersRepository.find({
+      relations: [
+        'user',
+        'status',
+        'items',
+        'items.product',
+        'items.product.images',
+      ],
+      order: { date_placed: 'DESC' },
+      take: limit,
+    });
+    return orders.map(order => this.buildOrderResponse(order));
   }
 
 
@@ -545,20 +564,5 @@ export class OrdersService {
       .getRawMany();
       
     return revenue;
-  }
-  
-  
-  async getRecentOrders(limit: number) {
-    return await this.ordersRepository.find({
-      relations: [
-        'user', 
-        'status', 
-        'items', 
-        'items.product',
-        'items.product.images',
-      ],
-      order: { date_placed: 'DESC' },
-      take: limit,
-    });
   }
 }

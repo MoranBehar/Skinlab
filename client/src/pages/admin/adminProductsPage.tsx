@@ -75,7 +75,7 @@ export const AdminProducts: React.FC = () => {
               </h2>
               <p className="text-muted">Manage your product inventory</p>
             </div>
-            <Button variant="primary" size="lg" href="/admin/products/new">
+            <Button variant="primary" size="lg" href="/admin/products/create">
               <i className="bi bi-plus-circle me-2"></i>
               Add New Product
             </Button>
@@ -150,6 +150,7 @@ export const AdminProducts: React.FC = () => {
                             href={`/admin/products/edit/${product.product_id}`}
                           >
                             <i className="bi bi-pencil"></i>
+                            Edit
                           </Button>
                           <Button
                             variant="outline-danger"
@@ -157,6 +158,7 @@ export const AdminProducts: React.FC = () => {
                             onClick={() => handleDeleteClick(product)}
                           >
                             <i className="bi bi-trash"></i>
+                            Delete
                           </Button>
                         </td>
                       </tr>
@@ -169,7 +171,7 @@ export const AdminProducts: React.FC = () => {
                 <div className="text-center py-5">
                   <i className="bi bi-box-seam fs-1 text-muted"></i>
                   <p className="text-muted mt-3">No products found</p>
-                  <Button variant="primary" href="/admin/products/new">
+                  <Button variant="primary" href="">
                     Add Your First Product
                   </Button>
                 </div>

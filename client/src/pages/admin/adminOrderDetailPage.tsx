@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Badge, Button, Table } from 'react-bootstrap';
 import { adminApi } from '../../services/admin.api';
-import { Order } from '../../types/order.types';
-import { OrderDetail } from '../../types/admin.types';
+import { AdminOrder, OrderDetail } from '../../types/admin.types';
 
 export const AdminOrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [orderDetail, setOrderDetail] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,8 +16,16 @@ export const AdminOrderDetail: React.FC = () => {
 
   const fetchOrderDetail = async () => {
     try {
-      const data = await adminApi.getOrderById(parseInt(id!));
-      setOrder(data as OrderDetail);
+      const result = await adminApi.getOrderById(parseInt(id!));
+
+            console.log("***", result);
+
+      setOrderDetail({
+        ...result.orderResponse, 
+        tracking: result.tracking,
+      });
+
+      console.log("***", orderDetail);
     } catch (error) {
       console.error('Failed to fetch order details:', error);
     } finally {
@@ -49,7 +56,7 @@ export const AdminOrderDetail: React.FC = () => {
     );
   }
 
-  if (!order) {
+  if (!orderDetail) {
     return (
       <Container className="py-5 text-center">
         <i className="bi bi-exclamation-circle fs-1 text-danger"></i>
@@ -77,10 +84,10 @@ export const AdminOrderDetail: React.FC = () => {
           <div className="d-flex justify-content-between align-items-center">
             <div>
               <h2 className="fw-bold text-dark mb-1">
-                Order #{order.order_id}
+                Order #{orderDetail.order_id}
               </h2>
               <p className="text-muted mb-0">
-                Placed on {new Date(order.date_placed).toLocaleDateString('he-IL', {
+                Placed on {new Date(orderDetail.date_placed).toLocaleDateString('he-IL', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -88,10 +95,10 @@ export const AdminOrderDetail: React.FC = () => {
               </p>
             </div>
             <Badge
-              bg={getStatusBadgeVariant(order.status.status_name)}
+              bg={getStatusBadgeVariant(orderDetail.status?.status_name)}
               className="fs-6 px-3 py-2"
             >
-              {order.status.status_name.toUpperCase()}
+              {orderDetail.status.status_name.toUpperCase()}
             </Badge>
           </div>
         </Col>
@@ -119,13 +126,13 @@ export const AdminOrderDetail: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {order.shoppingCart.items.map((item, index) => (
+                  {(orderDetail.items || []).map((item, index) => (
                     <tr key={index}>
                       <td className="ps-4 align-middle">
                         <div className="d-flex align-items-center">
                           <img
-                            src={item.product.images[0]?.image_path || '/placeholder.png'}
-                            alt={item.product.name}
+                            src={item.image_path ?? '/placeholder.png'}
+                            alt={item.product_name}
                             style={{
                               width: '50px',
                               height: '50px',
@@ -134,16 +141,16 @@ export const AdminOrderDetail: React.FC = () => {
                             }}
                             className="me-3"
                           />
-                          <span className="fw-semibold">{item.product.name}</span>
+                          <span className="fw-semibold">{item.product_name}</span>
                         </div>
                       </td>
-                      <td className="align-middle">₪{Number(item.product.price).toFixed(2)}</td>
+                      <td className="align-middle">₪{Number(item.price).toFixed(2)}</td>
                       <td className="align-middle">
                         <Badge bg="secondary">{item.quantity}</Badge>
                       </td>
                       <td className="align-middle text-end pe-4">
                         <span className="fw-bold">
-                          ₪{Number(item.product.price * item.quantity).toFixed(2)}
+                          ₪{Number(item.price * item.quantity).toFixed(2)}
                         </span>
                       </td>
                     </tr>
@@ -155,7 +162,7 @@ export const AdminOrderDetail: React.FC = () => {
                       Total Amount:
                     </td>
                     <td className="text-end fw-bold py-3 pe-4 fs-5 text-primary">
-                      ₪{Number(order.price).toFixed(2)}
+                      ₪{Number(orderDetail.price).toFixed(2)}
                     </td>
                   </tr>
                 </tfoot>
@@ -172,14 +179,14 @@ export const AdminOrderDetail: React.FC = () => {
               </h5>
             </Card.Header>
             <Card.Body>
-              {order.tracking.map((track, index) => (
+              {orderDetail.tracking.map((track, index) => (
                 <div key={index} className="d-flex mb-4 position-relative">
                   <div className="me-3">
                     <div
                       className={`rounded-circle d-flex align-items-center justify-content-center ${
-                        track.status.status_name === 'delivered'
+                        track.status_name === 'delivered'
                           ? 'bg-success'
-                          : track.status.status_name === 'shipped'
+                          : track.status_name === 'shipped'
                           ? 'bg-primary'
                           : 'bg-danger'
                       }`}
@@ -187,15 +194,15 @@ export const AdminOrderDetail: React.FC = () => {
                     >
                       <i
                         className={`bi ${
-                          track.status.status_name === 'delivered'
+                          track.status_name === 'delivered'
                             ? 'bi-check-circle'
-                            : track.status.status_name === 'shipped'
+                            : track.status_name === 'shipped'
                             ? 'bi-truck'
                             : 'bi-x-circle'
                         } text-white`}
                       ></i>
                     </div>
-                    {index < order.tracking.length - 1 && (
+                    {index < orderDetail.tracking.length - 1 && (
                       <div
                         className="bg-secondary"
                         style={{
@@ -209,7 +216,7 @@ export const AdminOrderDetail: React.FC = () => {
                   </div>
                   <div className="flex-grow-1">
                     <div className="fw-semibold text-capitalize">
-                      {track.status.status_name.replace('_', ' ')}
+                      {track.status_name.replace('_', ' ')}
                     </div>
                     <div className="text-muted small">
                       {new Date(track.date).toLocaleString('he-IL')}
@@ -240,18 +247,12 @@ export const AdminOrderDetail: React.FC = () => {
             <Card.Body>
               <div className="mb-3">
                 <div className="text-muted small mb-1">Name</div>
-                <div className="fw-semibold">{order.user.full_name}</div>
+                <div className="fw-semibold">{orderDetail.user.full_name}</div>
               </div>
               <div className="mb-3">
                 <div className="text-muted small mb-1">Email</div>
-                <div>{order.user.email}</div>
+                <div>{orderDetail.user.email}</div>
               </div>
-              {order.user.phone && (
-                <div>
-                  <div className="text-muted small mb-1">Phone</div>
-                  <div>{order.user.phone}</div>
-                </div>
-              )}
             </Card.Body>
           </Card>
 
@@ -267,27 +268,27 @@ export const AdminOrderDetail: React.FC = () => {
               <div className="mb-3">
                 <div className="text-muted small mb-1">Shipping Method</div>
                 <Badge bg="info" className="text-capitalize">
-                  {order.shippingType.type_name.replace('_', ' ')}
+                  {orderDetail.shipping_type?.shipping_type_name.replace('_', ' ')}
                 </Badge>
               </div>
-              {order.shippingAddress && (
+              {orderDetail.shipping_address && (
                 <>
                   <div className="mb-3">
                     <div className="text-muted small mb-1">Address</div>
                     <div>
-                      {order.shippingAddress.address}, Apt {order.shippingAddress.apartment_number}
-                      , Floor {order.shippingAddress.floor_number}
+                      {orderDetail.shipping_address.address}, Apt {orderDetail.shipping_address.apartment_number}
+                      , Floor {orderDetail.shipping_address.floor_number}
                     </div>
-                    <div>{order.shippingAddress.city}</div>
+                    <div>{orderDetail.shipping_address.city}</div>
                   </div>
                   <div className="mb-3">
                     <div className="text-muted small mb-1">Phone</div>
-                    <div>{order.shippingAddress.phone_number}</div>
+                    <div>{orderDetail.shipping_address.phone_number}</div>
                   </div>
-                  {order.shippingAddress.comments && (
+                  {orderDetail.shipping_address.comments && (
                     <div>
                       <div className="text-muted small mb-1">Delivery Notes</div>
-                      <div className="small">{order.shippingAddress.comments}</div>
+                      <div className="small">{orderDetail.shipping_address.comments}</div>
                     </div>
                   )}
                 </>
@@ -308,8 +309,8 @@ export const AdminOrderDetail: React.FC = () => {
                 <div className="text-muted small mb-1">Payment Method</div>
                 <div className="d-flex align-items-center">
                   <i className="bi bi-credit-card fs-5 me-2"></i>
-                  <span className="text-capitalize">{order.credit_card_brand}</span>
-                  <span className="ms-2">****{order.credit_card_last_four_digits}</span>
+                  <span className="text-capitalize">{orderDetail.credit_card_brand}</span>
+                  <span className="ms-2">****{orderDetail.credit_card_last_four_digits}</span>
                 </div>
               </div>
             </Card.Body>

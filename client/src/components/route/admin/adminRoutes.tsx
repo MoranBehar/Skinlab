@@ -6,6 +6,7 @@ import { AdminProducts } from '../../../pages/admin/adminProductsPage';
 import { AdminProductForm } from '../../admin/adminProductsForm';
 import { AdminOrders } from '../../../pages/admin/adminOrdersPage';
 import { AdminOrderDetail } from '../../../pages/admin/adminOrderDetailPage';
+import { AdminAnalytics } from '../../../pages/admin/AdminAnalyticsPage';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -40,12 +41,15 @@ export const AdminRoutes: React.FC = () => {
         
         {/* Products Routes */}
         <Route path="products" element={<AdminProducts />} />
-        <Route path="products/new" element={<AdminProductForm />} />
+        <Route path="products/create" element={<AdminProductForm />} />
         <Route path="products/edit/:id" element={<AdminProductForm />} />
         
         {/* Orders Routes */}
         <Route path="orders" element={<AdminOrders />} />
         <Route path="orders/:id" element={<AdminOrderDetail />} />
+
+        {/* Analytics Routes */}
+        <Route path="analytics" element={<AdminAnalytics />} />
         
         {/* Fallback */}
         <Route path="*" element={<Navigate to="./dashboard" replace />} />
