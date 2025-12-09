@@ -30,7 +30,8 @@ export interface Status {
 }
 
 export interface ShippingAddress {
-  address_id: number;
+  address_id?: number;
+  user_id?: number;
   address: string;
   apartment_number: number;
   floor_number: number;
@@ -51,7 +52,7 @@ export interface CreateOrderRequest {
   shipping_type_id: number;
   credit_card_brand: string;
   credit_card_last_four_digits: string;
-  shipping_address_id?: number;
+  shipping_address?: ShippingAddress;
 }
 
 export interface UpdateOrderStatusRequest {

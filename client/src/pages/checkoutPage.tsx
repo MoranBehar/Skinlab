@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../hooks/useOrders';
 import { CreateOrderRequest } from '../types/order.types';
 import { useCart } from '../contexts/cartContext';
+import { ShippingAddressForm } from '../types/checkout.types'
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,19 @@ const CheckoutPage: React.FC = () => {
   const [shippingType, setShippingType] = useState<number>(1);
   const [cardBrand, setCardBrand] = useState<string>('');
   const [cardNumber, setCardNumber] = useState<string>('');
+
+  // Shipping address state
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddressForm>({
+    address: '',
+    apartment_number: 0,
+    floor_number: 0,
+    city: '',
+    phone_number: '',
+    comments: '',
+  });
+
+  const homeDeliveryType = 1;
+  const pickupType = 112;
 
   // Format card number with spaces (1234 5678 9012 3456)
   const formatCardNumber = (value: string): string => {
@@ -37,7 +51,30 @@ const CheckoutPage: React.FC = () => {
       setCardNumber(value);
     }
   };
+
+
+  const handleShippingTypeChange = (type: number) => {
+    setShippingType(type);
+    
+    // Reset address if switching to pickup
+    if (type === pickupType) {
+      setShippingAddress({
+        address: '',
+        apartment_number: 0,
+        floor_number: 0,
+        city: '',
+        phone_number: '',
+        comments: '',
+      });
+    }
+  };
   
+  const handleAddressChange = (field: keyof ShippingAddressForm, value: string | number) => {
+    setShippingAddress(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +98,34 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
+    // Validate shipping address if home delivery
+    if (shippingType === homeDeliveryType) {
+      if (!shippingAddress.address.trim()) {
+        setError('Please enter your address');
+        return;
+      }
+
+      if (!shippingAddress.city.trim()) {
+        setError('Please enter your city');
+        return;
+      }
+
+      if (!shippingAddress.phone_number.trim()) {
+        setError('Please enter your phone number');
+        return;
+      }
+
+      if (shippingAddress.apartment_number <= 0) {
+        setError('Please enter a valid apartment number');
+        return;
+      }
+
+      if (shippingAddress.floor_number < 0) {
+        setError('Please enter a valid floor number');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -71,6 +136,7 @@ const CheckoutPage: React.FC = () => {
         shipping_type_id: shippingType,
         credit_card_brand: cardBrand,
         credit_card_last_four_digits: lastFourDigits,
+        shipping_address: ((shippingType === homeDeliveryType) ? shippingAddress : undefined)
       };
 
       const order = await createOrder(orderData);
@@ -188,9 +254,9 @@ const CheckoutPage: React.FC = () => {
                       type="radio"
                       name="shippingType"
                       id="homeDelivery"
-                      value={1}
-                      checked={shippingType === 1}
-                      onChange={(e) => setShippingType(Number(e.target.value))}
+                      value={homeDeliveryType}
+                      checked={shippingType === homeDeliveryType}
+                      onChange={(e) => handleShippingTypeChange(Number(e.target.value))}
                     />
                     <label className="form-check-label" htmlFor="homeDelivery">
                       Home Delivery
@@ -202,15 +268,120 @@ const CheckoutPage: React.FC = () => {
                       type="radio"
                       name="shippingType"
                       id="pickup"
-                      value={112}
-                      checked={shippingType === 112}
-                      onChange={(e) => setShippingType(Number(e.target.value))}
+                      value={pickupType}
+                      checked={shippingType === pickupType}
+                      onChange={(e) => handleShippingTypeChange(Number(e.target.value))}
                     />
                     <label className="form-check-label" htmlFor="pickup">
                       Pickup at Store
                     </label>
                   </div>
                 </div>
+
+                {/* Shipping Address - Only show if Home Delivery */}
+                {shippingType === homeDeliveryType && (
+                  <div className="mb-4 p-3 border rounded bg-light">
+                    <h6 className="fw-bold mb-3">
+                      <i className="bi bi-geo-alt me-2"></i>
+                      Delivery Address
+                    </h6>
+                    
+                    <div className="row">
+                      <div className="col-md-8 mb-3">
+                        <label htmlFor="address" className="form-label">
+                          Street Address <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="address"
+                          placeholder="Enter your street address"
+                          value={shippingAddress.address}
+                          onChange={(e) => handleAddressChange('address', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-4 mb-3">
+                        <label htmlFor="city" className="form-label">
+                          City <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="city"
+                          placeholder="City"
+                          value={shippingAddress.city}
+                          onChange={(e) => handleAddressChange('city', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="row">
+                      <div className="col-md-4 mb-3">
+                        <label htmlFor="apartmentNumber" className="form-label">
+                          Apartment # <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          id="apartmentNumber"
+                          placeholder="Apt"
+                          min="1"
+                          value={shippingAddress.apartment_number || ''}
+                          onChange={(e) => handleAddressChange('apartment_number', parseInt(e.target.value) || 0)}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-4 mb-3">
+                        <label htmlFor="floorNumber" className="form-label">
+                          Floor # <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          id="floorNumber"
+                          placeholder="Floor"
+                          min="0"
+                          value={shippingAddress.floor_number || ''}
+                          onChange={(e) => handleAddressChange('floor_number', parseInt(e.target.value) || 0)}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-4 mb-3">
+                        <label htmlFor="phoneNumber" className="form-label">
+                          Phone Number <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          className="form-control"
+                          id="phoneNumber"
+                          placeholder="05X-XXX-XXXX"
+                          value={shippingAddress.phone_number}
+                          onChange={(e) => handleAddressChange('phone_number', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="comments" className="form-label">
+                        Delivery Instructions (Optional)
+                      </label>
+                      <textarea
+                        className="form-control"
+                        id="comments"
+                        rows={2}
+                        placeholder="Any special delivery instructions..."
+                        value={shippingAddress.comments}
+                        onChange={(e) => handleAddressChange('comments', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Payment Details */}
                 <div className="mb-4">

@@ -1,4 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional, Matches, Length } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, Matches, Length, Min } from 'class-validator';
+import { ShippingAddressDto } from './shippingAdress.dto';
 
 export class CreateOrderDto {
   @IsNotEmpty()
@@ -16,6 +18,6 @@ export class CreateOrderDto {
   credit_card_last_four_digits: string;
 
   @IsOptional()
-  @IsNumber()
-  shipping_address_id?: number;
+  @Type(() => ShippingAddressDto)
+  shipping_address?: ShippingAddressDto;
 }

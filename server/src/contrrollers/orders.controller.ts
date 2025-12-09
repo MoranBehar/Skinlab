@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Patch,
-  Put,
   Body,
   Param,
   UseGuards,
@@ -12,7 +11,6 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
-  BadRequestException,
 } from '@nestjs/common';
 import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto } from '../DTO/orders/createOrder.dto';

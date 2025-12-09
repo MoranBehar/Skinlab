@@ -37,7 +37,7 @@ export class Order {
   credit_card_last_four_digits: string;
 
   @Column({ type: 'integer', nullable: true })
-  shipping_address_id: number;
+  shipping_address_id: number | null;
 
   // Relations
   @ManyToOne(() => User, (user) => user.orders)

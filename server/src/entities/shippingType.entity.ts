@@ -3,7 +3,7 @@ import { Order } from './order.entity';
 
 @Entity({ schema: 'skinlab', name: 'shipping_types' })
 export class ShippingType {
-  @PrimaryColumn({ type: 'numeric' })
+  @PrimaryColumn({ type: 'int' })
   type_id: number;
 
   @Column({ type: 'text', unique: true })

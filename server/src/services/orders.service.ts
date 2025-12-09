@@ -59,6 +59,8 @@ export class OrdersService {
     // --- USER CRUD ---
 
   async createOrder(userId: number, createOrderDto: CreateOrderDto) {
+    const { shipping_type_id, shipping_address, ...orderData } = createOrderDto;
+
     // Find user's shopping cart
     const cart = await this.shoppingCartRepository.findOne({
       where: { user_id: userId },
@@ -122,23 +124,40 @@ export class OrdersService {
       throw new BadRequestException('Invalid shipping type');
     }
 
-    // Verify shipping address if provided
-    if (createOrderDto.shipping_address_id) {
-      const address = await this.shippingAddressRepository.findOne({
-        where: { 
-          address_id: createOrderDto.shipping_address_id,
-          user_id: userId 
-        },
+    let shippingAddressId : number | null = null;
+    const homeDelivery = 1;
+
+    if(Number(shippingType.type_id) === homeDelivery) {
+      if (!shipping_address) {
+        throw new BadRequestException('Shipping address is required for home delivery');
+    }
+
+    console.log("shipping_address DTO:", shipping_address);
+
+    // Create new shipping address
+      const newAddress = this.shippingAddressRepository.create({
+        user_id: userId,
+        address: shipping_address.address,
+        apartment_number: shipping_address.apartment_number,
+        floor_number: shipping_address.floor_number,
+        city: shipping_address.city,
+        phone_number: shipping_address.phone_number,
+        comments: shipping_address.comments ?? undefined,
       });
 
-      if (!address) {
-        throw new BadRequestException('Invalid shipping address');
-      }
+      console.log("newAddress:", newAddress);
+
+
+      const savedAddress = await this.shippingAddressRepository.save(newAddress);
+      shippingAddressId = savedAddress.address_id;
+
+      console.log("Shipping Address ID:", shippingAddressId);
     }
+
 
     // Create order with 'shipped' status (status_id = 1)
     const order = this.ordersRepository.create({
-      user_id: userId,
+      user: { user_id: userId },
       status_id: 1,
       date_placed: new Date(),
       price: totalPrice,
@@ -146,7 +165,7 @@ export class OrdersService {
       shipping_type_id: createOrderDto.shipping_type_id,
       credit_card_brand: createOrderDto.credit_card_brand,
       credit_card_last_four_digits: createOrderDto.credit_card_last_four_digits,
-      shipping_address_id: createOrderDto.shipping_address_id,
+      shipping_address_id: shippingAddressId ?? undefined,
     });
 
     const savedOrder = await this.ordersRepository.save(order);
