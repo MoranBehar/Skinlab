@@ -12,7 +12,7 @@ import { OrdersModule } from 'src/modules/orders.module';
 // Import all entities
 import { User } from '../entities/user.entity';
 import { UserRole } from '../entities/userRole.entity';
-import { ShippingAddress } from '../entities/shippingAddress.entity';
+import { ShippingAddress } from '../entities/ShippingAddress.entity';
 import { ProductCategory } from '../entities/productCategory.entity';
 import { TargetAudience } from '../entities/targetAudience.entity';
 import { SkinType } from '../entities/skinType.entity';
@@ -31,7 +31,7 @@ import { OrderItem } from 'src/entities/orderItem.entity';
   imports: [
     //Managing environment variables
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
     }),
 
     //Database connection
@@ -63,8 +63,8 @@ import { OrderItem } from 'src/entities/orderItem.entity';
           OrderTracking,
           OrderItem,
         ],
-        synchronize: false, 
-        logging: true, 
+        synchronize: false,
+        logging: true,
       }),
     }),
 
