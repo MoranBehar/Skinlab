@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../common/guards/jwtAuth.guard';
 import { GetUser } from '../common/decorators/getUser.decorator';
 
 @Controller('cart')
-@UseGuards(JwtAuthGuard) 
+@UseGuards(JwtAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 

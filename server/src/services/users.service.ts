@@ -25,7 +25,10 @@ export class UsersService {
     return await this.usersRepository.findOne({ where: { user_id: userId } });
   }
 
-  async updateAccessToken(userId: number, accessToken: string | undefined): Promise<void> {
+  async updateAccessToken(
+    userId: number,
+    accessToken: string | undefined,
+  ): Promise<void> {
     await this.usersRepository.update(userId, { access_token: accessToken });
   }
 
@@ -41,7 +44,14 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return await this.usersRepository.find({
-      select: ['user_id', 'full_name', 'email', 'role_id', 'points', 'creating_date'],
+      select: [
+        'user_id',
+        'full_name',
+        'email',
+        'role_id',
+        'points',
+        'creating_date',
+      ],
     });
   }
 

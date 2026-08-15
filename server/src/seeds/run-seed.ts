@@ -1,4 +1,3 @@
-
 import { DataSource } from 'typeorm';
 import { seedProducts } from './products.seed';
 

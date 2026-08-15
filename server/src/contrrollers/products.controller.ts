@@ -1,7 +1,18 @@
-import { 
-    Controller, Get, Post, Put, Delete, Body, Param, Query,
-    ParseIntPipe, UseGuards, UseInterceptors, UploadedFile, BadRequestException,
-    UploadedFiles,
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  ParseIntPipe,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+  UploadedFiles,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from '../services/products.service';
@@ -50,7 +61,6 @@ export class ProductsController {
     return await this.productsService.createProduct(createProductDto, images);
   }
 
-  
   @Put('admin/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(1)
@@ -60,19 +70,19 @@ export class ProductsController {
     @Body() updateProductDto: UpdateProductDto,
     @UploadedFiles() images?: Express.Multer.File[],
   ) {
-    return await this.productsService.updateProduct(id, updateProductDto, images);
+    return await this.productsService.updateProduct(
+      id,
+      updateProductDto,
+      images,
+    );
   }
 
-  
   @Delete('admin/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(1)
-  async deleteProduct(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async deleteProduct(@Param('id', ParseIntPipe) id: number) {
     return await this.productsService.softDeleteProduct(id);
   }
-
 
   @Get('admin/stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -81,11 +91,12 @@ export class ProductsController {
     return await this.productsService.getProductStats();
   }
 
-
   @Get('admin/all')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(1)
-  async getAllProductsForAdmin(@Query('includeDeleted') includeDeleted?: string) {
+  async getAllProductsForAdmin(
+    @Query('includeDeleted') includeDeleted?: string,
+  ) {
     const include = includeDeleted === 'true';
     return await this.productsService.getAllProductsForAdmin(include);
   }

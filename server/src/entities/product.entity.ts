@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { ProductCategory } from './productCategory.entity';
 import { TargetAudience } from './targetAudience.entity';
 import { SkinType } from './skinType.entity';
@@ -78,5 +85,5 @@ export class Product {
   cart_items: ShoppingCartItem[];
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
-  order_items: OrderItem[]; 
+  order_items: OrderItem[];
 }

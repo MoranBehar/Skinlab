@@ -5,8 +5,9 @@ import { UsersController } from '../contrrollers/users.controller';
 import { User } from '../entities/user.entity';
 
 @Module({
-  imports: [// Sign User Entity
-    TypeOrmModule.forFeature([User]) 
+  imports: [
+    // Sign User Entity
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [UsersController],
   providers: [UsersService],

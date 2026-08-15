@@ -43,7 +43,6 @@ export class FilterProductsDto {
   @Min(0)
   max_price?: number;
 
-
   // sorting
   @IsOptional()
   @IsEnum(SortBy)

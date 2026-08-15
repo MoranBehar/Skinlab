@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
 
@@ -17,7 +23,7 @@ export class OrderItem {
   quantity: number;
 
   @Column({ name: 'price_at_purchase', type: 'numeric' })
-  price_at_purchase: number; 
+  price_at_purchase: number;
 
   // Relations
   @ManyToOne(() => Order, (order) => order.items)

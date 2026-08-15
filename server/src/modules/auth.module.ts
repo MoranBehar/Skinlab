@@ -11,9 +11,9 @@ import { UsersModule } from './users.module';
 @Module({
   imports: [
     UsersModule,
-    
+
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    
+
     //JWT Module - settings
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -27,15 +27,7 @@ import { UsersModule } from './users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,      
-    JwtStrategy,      
-    GoogleStrategy,   
-  ],
-  exports: [
-    AuthService,
-    JwtStrategy,
-    PassportModule,
-  ],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  exports: [AuthService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

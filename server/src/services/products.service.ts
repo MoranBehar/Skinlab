@@ -1,6 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, Like, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import {
+  Repository,
+  FindOptionsWhere,
+  Like,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+} from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
 import { CreateProductDto } from '../DTO/products/createProduct.dto';
@@ -16,7 +27,7 @@ export class ProductsService {
 
     @InjectRepository(ProductImage)
     private productImagesRepository: Repository<ProductImage>,
-    
+
     private s3Service: S3Service,
   ) {}
 
@@ -48,7 +59,9 @@ export class ProductsService {
 
     // Filter logic (category, skin type, target audience, product type, price range, search)
     if (category_id) {
-      queryBuilder.andWhere('product.category_id = :category_id', { category_id });
+      queryBuilder.andWhere('product.category_id = :category_id', {
+        category_id,
+      });
     }
 
     if (skin_type) {
@@ -56,11 +69,15 @@ export class ProductsService {
     }
 
     if (target_audience) {
-      queryBuilder.andWhere('product.target_audience = :target_audience', { target_audience });
+      queryBuilder.andWhere('product.target_audience = :target_audience', {
+        target_audience,
+      });
     }
 
     if (product_type) {
-      queryBuilder.andWhere('product.product_type = :product_type', { product_type });
+      queryBuilder.andWhere('product.product_type = :product_type', {
+        product_type,
+      });
     }
 
     if (min_price !== undefined && max_price !== undefined) {
@@ -120,19 +137,19 @@ export class ProductsService {
     };
   }
 
-  async getProductById(id: number) : Promise<Product> {
+  async getProductById(id: number): Promise<Product> {
     const product = await this.productsRepository.findOne({
-      where: {product_id : id},
+      where: { product_id: id },
       relations: [
-        'images', 
-        'category', 
-        'skin_type_rel', 
-        'target_audience_rel', 
-        'product_type_rel'
+        'images',
+        'category',
+        'skin_type_rel',
+        'target_audience_rel',
+        'product_type_rel',
       ],
     });
 
-    if(!product) {
+    if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
 
@@ -149,36 +166,50 @@ export class ProductsService {
       }
 
       return product;
+    } catch (error) {
+      console.error('Failed to retrieve product: ', error);
 
-    } catch (error){
-        console.error('Failed to retrieve product: ', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
 
-        if (error instanceof NotFoundException) {
-            throw error;
-        }
-
-        throw new BadRequestException('Database error occurred while fetching product details');
+      throw new BadRequestException(
+        'Database error occurred while fetching product details',
+      );
     }
   }
 
   // Getting all categories/skin types/etc. for filters
   private getDistinctFilter(relationName: string, id: string, name: string) {
     return this.productsRepository
-        .createQueryBuilder('product')
-        .leftJoin(`product.${relationName}`, relationName) 
-        .distinct(true)
-        .select(`${relationName}.${id}`, 'id') 
-        .addSelect(`${relationName}.${name}`, 'name') 
-        .getRawMany();
+      .createQueryBuilder('product')
+      .leftJoin(`product.${relationName}`, relationName)
+      .distinct(true)
+      .select(`${relationName}.${id}`, 'id')
+      .addSelect(`${relationName}.${name}`, 'name')
+      .getRawMany();
   }
 
   async getFilterOptions() {
-    const [categories, skinTypes, targetAudiences, productTypes] = await Promise.all([
-      this.getDistinctFilter('category', 'category_id', 'category_name'),
-      this.getDistinctFilter('skin_type_rel', 'skin_type_id', 'skin_type_name'),
-      this.getDistinctFilter('target_audience_rel', 'audience_id', 'audience_name'),
-      this.getDistinctFilter('product_type_rel', 'product_type_id', 'product_type_name'),
-    ]);
+    const [categories, skinTypes, targetAudiences, productTypes] =
+      await Promise.all([
+        this.getDistinctFilter('category', 'category_id', 'category_name'),
+        this.getDistinctFilter(
+          'skin_type_rel',
+          'skin_type_id',
+          'skin_type_name',
+        ),
+        this.getDistinctFilter(
+          'target_audience_rel',
+          'audience_id',
+          'audience_name',
+        ),
+        this.getDistinctFilter(
+          'product_type_rel',
+          'product_type_id',
+          'product_type_name',
+        ),
+      ]);
 
     return {
       categories,
@@ -192,9 +223,9 @@ export class ProductsService {
 
   private async uploadAndSaveImages(productId, images) {
     const uploadedImages = await Promise.all(
-        images.map((file) => this.s3Service.uploadProductImage(productId, file)),
-      );
-    
+      images.map((file) => this.s3Service.uploadProductImage(productId, file)),
+    );
+
     const productImageEntities = uploadedImages.map((url) =>
       this.productImagesRepository.create({
         product_id: productId,
@@ -204,12 +235,11 @@ export class ProductsService {
 
     await this.productImagesRepository.save(productImageEntities);
   }
-  
+
   async createProduct(
     createProductDto: CreateProductDto,
     images: Express.Multer.File[],
   ): Promise<Product> {
-
     // Creating new product
     const product = this.productsRepository.create({
       ...createProductDto,
@@ -225,9 +255,8 @@ export class ProductsService {
     return await this.getProductById(savedProduct.product_id);
   }
 
- 
   async updateProduct(
-    id: number, 
+    id: number,
     updateProductDto: UpdateProductDto,
     images?: Express.Multer.File[],
   ): Promise<Product> {
@@ -246,15 +275,16 @@ export class ProductsService {
     return await this.getProductById(id);
   }
 
-
-  async softDeleteProduct(id: number): Promise<{ success: boolean; message: string; product_id: number; }> {
+  async softDeleteProduct(
+    id: number,
+  ): Promise<{ success: boolean; message: string; product_id: number }> {
     const product = await this.getProductById(id);
-    
+
     // Soft delete - mark as unavailable
     product.is_available = false;
-    product.deleting_date = new Date(); 
+    product.deleting_date = new Date();
     await this.productsRepository.save(product);
-    
+
     return {
       success: true,
       message: 'Product deleted successfully (soft delete)',
@@ -262,7 +292,6 @@ export class ProductsService {
     };
   }
 
-  
   async getProductStats() {
     const totalProducts = await this.productsRepository.count({
       where: { is_available: true },
@@ -272,15 +301,15 @@ export class ProductsService {
       where: { is_available: false },
     });
 
-    const productsByCategory = await this.productsRepository 
+    const productsByCategory = await this.productsRepository
       .createQueryBuilder('product')
       .select('category.category_name', 'category')
       .addSelect('COUNT(product.product_id)', 'count')
-      .leftJoin('product.category', 'category') 
+      .leftJoin('product.category', 'category')
       .where('product.is_available = :available', { available: true })
       .groupBy('category.category_name')
       .getRawMany();
-      
+
     return {
       totalProducts,
       unavailableProducts,
@@ -288,15 +317,14 @@ export class ProductsService {
     };
   }
 
-
   async getAllProductsForAdmin(includeDeleted: boolean = false) {
     const queryBuilder = this.productsRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.target_audience_rel', 'targetAudience') 
-      .leftJoinAndSelect('product.skin_type_rel', 'skinType') 
-      .leftJoinAndSelect('product.product_type_rel', 'productType') 
+      .leftJoinAndSelect('product.target_audience_rel', 'targetAudience')
+      .leftJoinAndSelect('product.skin_type_rel', 'skinType')
+      .leftJoinAndSelect('product.product_type_rel', 'productType')
       .orderBy('product.creating_date', 'DESC');
 
     if (!includeDeleted) {

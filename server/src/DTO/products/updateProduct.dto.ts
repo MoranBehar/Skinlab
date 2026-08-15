@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, IsBoolean, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class UpdateProductDto {
   @IsOptional()
