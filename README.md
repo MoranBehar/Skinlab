@@ -89,9 +89,7 @@ cd server
 npx ts-node -r tsconfig-paths/register src/seeds/run-seed.ts
 ```
 
-Note: the seed script currently connects with hardcoded local credentials
-(`localhost:5432`, user/password `postgres`, database `postgres`) rather than reading
-`server/.env` — adjust those values in `src/seeds/run-seed.ts` if your local setup differs.
+The seed script reads the same `DATABASE_*` variables as the server from `server/.env`.
 
 ### 5. Run the backend
 
