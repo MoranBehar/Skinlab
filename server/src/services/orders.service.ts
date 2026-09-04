@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, SelectQueryBuilder, In } from 'typeorm';
+import { Repository, Between, In } from 'typeorm';
 
 // entities
 import { Order } from '../entities/order.entity';
@@ -62,7 +62,7 @@ export class OrdersService {
   // --- USER CRUD ---
 
   async createOrder(userId: number, createOrderDto: CreateOrderDto) {
-    const { shipping_type_id, shipping_address, ...orderData } = createOrderDto;
+    const { shipping_address } = createOrderDto;
 
     // Find user's shopping cart
     const cart = await this.shoppingCartRepository.findOne({
@@ -227,13 +227,7 @@ export class OrdersService {
     });
 
     // Build response with all order details
-    const ordersWithDetails = await Promise.all(
-      orders.map(async (order) => {
-        return this.buildOrderResponse(order);
-      }),
-    );
-
-    return ordersWithDetails;
+    return orders.map((order) => this.buildOrderResponse(order));
   }
 
   async getOrderById(orderId: number, userId: number) {
@@ -345,7 +339,7 @@ export class OrdersService {
   // Build complete order response with all related data
   private buildOrderResponse(order: Order) {
     const items = (order.items || []).map((item) => {
-      const product = (item as any).product as Product | undefined;
+      const product = item.product;
 
       // choose first image_path if exists
       const image_path =
@@ -476,7 +470,7 @@ export class OrdersService {
     const tracking = (order.tracking || []).map((t) => ({
       order_id: t.order_id,
       status_id: t.status_id,
-      status_name: (t.status && (t.status as any).status_name) || 'unknown',
+      status_name: t.status?.status_name || 'unknown',
       date: t.date,
       comments: t.comments,
     }));
@@ -546,7 +540,7 @@ export class OrdersService {
     const totalRevenue = await this.ordersRepository
       .createQueryBuilder('order')
       .select('SUM(order.price)', 'total')
-      .getRawOne();
+      .getRawOne<{ total: string | null }>();
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -561,19 +555,18 @@ export class OrdersService {
       .createQueryBuilder('order')
       .select('SUM(order.price)', 'total')
       .where('order.date_placed >= :today', { today })
-      .getRawOne();
+      .getRawOne<{ total: string | null }>();
 
     return {
       totalOrders,
       ordersByStatus,
-      totalRevenue: parseFloat(totalRevenue?.total) || 0,
+      totalRevenue: parseFloat(totalRevenue?.total ?? '0') || 0,
       todayOrders,
-      todayRevenue: parseFloat(todayRevenue?.total) || 0,
+      todayRevenue: parseFloat(todayRevenue?.total ?? '0') || 0,
     };
   }
 
   async getRevenueStats(period: 'day' | 'week' | 'month' | 'year') {
-    const now = new Date();
     let dateInterval: string;
 
     switch (period) {
@@ -612,7 +605,7 @@ export class OrdersService {
       .where('order.date_placed >= :startDate', { startDate: startOfPeriod })
       .groupBy(`DATE_TRUNC('${dateInterval}', order.date_placed)`)
       .orderBy(`DATE_TRUNC('${dateInterval}', order.date_placed)`, 'ASC')
-      .getRawMany();
+      .getRawMany<{ date: Date; revenue: string | null; orders: string }>();
 
     return revenue;
   }
