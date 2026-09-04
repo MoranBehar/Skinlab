@@ -8,7 +8,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { UserRole } from './userRole.entity';
-import { ShippingAddress } from './ShippingAddress.entity';
+import { ShippingAddress } from './shippingAddress.entity';
 import { ShoppingCart } from './shoppingCart.entity';
 import { Order } from './order.entity';
 
