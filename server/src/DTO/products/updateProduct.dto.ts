@@ -18,28 +18,28 @@ export class UpdateProductDto {
   description?: string;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   category_id?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseFloat(value))
+  @Transform(({ value }: { value: unknown }) => parseFloat(value as string))
   @IsNumber()
   @Min(0)
   price?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   target_audience?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   skin_type?: number;
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   product_type?: number;
 
@@ -53,14 +53,18 @@ export class UpdateProductDto {
   is_available?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
+  @Transform(({ value }: { value: unknown }) =>
+    value ? parseInt(value as string) : null,
+  )
   @IsNumber()
   @Min(1)
   @Max(5)
   rating?: number;
 
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
+  @Transform(({ value }: { value: unknown }) =>
+    value ? parseInt(value as string) : null,
+  )
   @IsNumber()
   @Min(0)
   @Max(100)
