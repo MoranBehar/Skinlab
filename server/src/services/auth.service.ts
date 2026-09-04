@@ -9,6 +9,8 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { RegisterDto } from '../DTO/auth/register.dto';
 import { LoginDto } from '../DTO/auth/login.dto';
+import type { GoogleAuthenticatedRequest } from '../common/types/authenticatedRequest';
+import type { JwtPayload } from '../strategies/jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -78,7 +80,7 @@ export class AuthService {
     };
   }
 
-  async googleLogin(req: any) {
+  async googleLogin(req: GoogleAuthenticatedRequest) {
     if (!req.user) {
       throw new BadRequestException('No user from Google');
     }
@@ -119,7 +121,7 @@ export class AuthService {
 
   async validateToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.verify<JwtPayload>(token);
       const user = await this.usersService.findById(payload.sub);
 
       if (!user || user.access_token !== token) {
@@ -127,7 +129,7 @@ export class AuthService {
       }
 
       return user;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid token');
     }
   }
