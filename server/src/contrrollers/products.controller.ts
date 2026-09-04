@@ -10,11 +10,10 @@ import {
   ParseIntPipe,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
   BadRequestException,
   UploadedFiles,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from '../services/products.service';
 import { CreateProductDto } from '../DTO/products/createProduct.dto';
 import { UpdateProductDto } from '../DTO/products/updateProduct.dto';
