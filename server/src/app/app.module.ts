@@ -12,7 +12,7 @@ import { OrdersModule } from 'src/modules/orders.module';
 // Import all entities
 import { User } from '../entities/user.entity';
 import { UserRole } from '../entities/userRole.entity';
-import { ShippingAddress } from '../entities/ShippingAddress.entity';
+import { ShippingAddress } from '../entities/shippingAddress.entity';
 import { ProductCategory } from '../entities/productCategory.entity';
 import { TargetAudience } from '../entities/targetAudience.entity';
 import { SkinType } from '../entities/skinType.entity';

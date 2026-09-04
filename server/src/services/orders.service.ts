@@ -15,7 +15,7 @@ import { ShoppingCart } from '../entities/shoppingCart.entity';
 import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
-import { ShippingAddress } from '../entities/ShippingAddress.entity';
+import { ShippingAddress } from '../entities/shippingAddress.entity';
 import { OrderItem } from 'src/entities/orderItem.entity';
 
 // DTO

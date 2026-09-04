@@ -6,7 +6,7 @@ import { Order } from '../entities/order.entity';
 import { OrderTracking } from '../entities/orderTracking.entity';
 import { OrderStatus } from '../entities/orderStatus.entity';
 import { ShippingType } from '../entities/shippingType.entity';
-import { ShippingAddress } from '../entities/ShippingAddress.entity';
+import { ShippingAddress } from '../entities/shippingAddress.entity';
 import { ShoppingCart } from '../entities/shoppingCart.entity';
 import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
 import { Product } from '../entities/product.entity';
