@@ -7,7 +7,7 @@ import { AuthModule } from '../modules/auth.module';
 import { UsersModule } from '../modules/users.module';
 import { ProductsModule } from '../modules/products.module';
 import { CartModule } from '../modules/cart.module';
-import { OrdersModule } from 'src/modules/orders.module';
+import { OrdersModule } from '../modules/orders.module';
 
 // Import all entities
 import { User } from '../entities/user.entity';
@@ -25,7 +25,7 @@ import { OrderStatus } from '../entities/orderStatus.entity';
 import { ShippingType } from '../entities/shippingType.entity';
 import { Order } from '../entities/order.entity';
 import { OrderTracking } from '../entities/orderTracking.entity';
-import { OrderItem } from 'src/entities/orderItem.entity';
+import { OrderItem } from '../entities/orderItem.entity';
 
 @Module({
   imports: [
