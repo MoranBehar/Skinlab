@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import {
   S3Client,
   PutObjectCommand,
-  DeleteObjectCommand,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -68,7 +67,7 @@ export class S3Service {
     }
   }
 
-  async deleteProductImage(productId: number): Promise<void> {
+  deleteProductImage(productId: number): void {
     this.logger.warn(
       `Soft delete activated for Product ID: ${productId}. Skipping physical image cleanup`,
     );

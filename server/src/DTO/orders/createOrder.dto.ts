@@ -6,7 +6,6 @@ import {
   IsOptional,
   Matches,
   Length,
-  Min,
 } from 'class-validator';
 import { ShippingAddressDto } from './shippingAdress.dto';
 

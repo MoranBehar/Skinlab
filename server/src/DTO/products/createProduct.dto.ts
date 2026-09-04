@@ -18,24 +18,24 @@ export class CreateProductDto {
   @IsNotEmpty()
   description: string;
 
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   category_id: number;
 
-  @Transform(({ value }) => parseFloat(value))
+  @Transform(({ value }: { value: unknown }) => parseFloat(value as string))
   @IsNumber()
   @Min(0)
   price: number;
 
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   target_audience: number;
 
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   skin_type: number;
 
-  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
   @IsNumber()
   product_type: number;
 
@@ -55,7 +55,9 @@ export class CreateProductDto {
   rating?: number;
 
   @IsOptional()
-  @Transform(({ value }) => (value ? parseInt(value) : null))
+  @Transform(({ value }: { value: unknown }) =>
+    value ? parseInt(value as string) : null,
+  )
   @IsNumber()
   @Min(0)
   @Max(100)

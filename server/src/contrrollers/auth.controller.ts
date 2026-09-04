@@ -16,6 +16,10 @@ import { RegisterDto } from '../DTO/auth/register.dto';
 import { LoginDto } from '../DTO/auth/login.dto';
 import { JwtAuthGuard } from '../common/guards/jwtAuth.guard';
 import { GetUser } from '../common/decorators/getUser.decorator';
+import type {
+  GoogleAuthenticatedRequest,
+  RequestUser,
+} from '../common/types/authenticatedRequest';
 
 @Controller('auth')
 export class AuthController {
@@ -34,11 +38,14 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {}
+  googleAuth() {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+  async googleAuthRedirect(
+    @Req() req: GoogleAuthenticatedRequest,
+    @Res() res: Response,
+  ) {
     const result = await this.authService.googleLogin(req);
     res.redirect(
       `${process.env.FRONTEND_URL}/auth/google/success?token=${result.access_token}`,
@@ -53,7 +60,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@GetUser() user: any) {
+  getMe(@GetUser() user: RequestUser) {
     return {
       user_id: user.user_id,
       full_name: user.full_name,
@@ -71,7 +78,7 @@ export class AuthController {
 
   @Get('validate')
   @UseGuards(JwtAuthGuard)
-  async validateToken() {
+  validateToken() {
     return { valid: true };
   }
 }

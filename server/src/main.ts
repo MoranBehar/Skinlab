@@ -28,4 +28,4 @@ async function bootstrap() {
   console.log(`Database: ${process.env.DATABASE_NAME}`);
 }
 
-bootstrap();
+void bootstrap();

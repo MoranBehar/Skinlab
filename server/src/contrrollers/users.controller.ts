@@ -26,15 +26,17 @@ export class UsersController {
   async getProfile(@GetUser('user_id') userId: number) {
     const user = await this.usersService.findById(userId);
 
-    let userData;
-
-    if (user) {
-      //not returning password and token
-      const { password, access_token, ...userProfile } = user;
-      userData = userProfile;
+    if (!user) {
+      return undefined;
     }
 
-    return userData;
+    //not returning password and token
+    const {
+      password: _password,
+      access_token: _accessToken,
+      ...userProfile
+    } = user;
+    return userProfile;
   }
 
   @Put('profile')
@@ -50,7 +52,11 @@ export class UsersController {
     const updatedUser = await this.usersService.update(userId, updateUserDto);
 
     //not returning password and token
-    const { password, access_token, ...userProfile } = updatedUser;
+    const {
+      password: _password,
+      access_token: _accessToken,
+      ...userProfile
+    } = updatedUser;
     return userProfile;
   }
 
@@ -60,15 +66,17 @@ export class UsersController {
   async getUserById(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findById(id);
 
-    let userData;
-
-    if (user) {
-      //not returning password and token
-      const { password, access_token, ...userProfile } = user;
-      userData = userProfile;
+    if (!user) {
+      return undefined;
     }
 
-    return userData;
+    //not returning password and token
+    const {
+      password: _password,
+      access_token: _accessToken,
+      ...userProfile
+    } = user;
+    return userProfile;
   }
 
   @Delete('profile')

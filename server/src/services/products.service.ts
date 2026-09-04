@@ -4,14 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Repository,
-  FindOptionsWhere,
-  Like,
-  Between,
-  MoreThanOrEqual,
-  LessThanOrEqual,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
 import { CreateProductDto } from '../DTO/products/createProduct.dto';
@@ -221,7 +214,10 @@ export class ProductsService {
 
   // -------- ADMIN CRUD --------
 
-  private async uploadAndSaveImages(productId, images) {
+  private async uploadAndSaveImages(
+    productId: number,
+    images: Express.Multer.File[],
+  ) {
     const uploadedImages = await Promise.all(
       images.map((file) => this.s3Service.uploadProductImage(productId, file)),
     );

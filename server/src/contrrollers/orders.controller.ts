@@ -18,6 +18,7 @@ import { UpdateOrderStatusDto } from '../DTO/orders/updateOrderStatus.dto';
 import { JwtAuthGuard } from '../common/guards/jwtAuth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import type { AuthenticatedRequest } from 'src/common/types/authenticatedRequest';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -28,18 +29,21 @@ export class OrdersController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createOrder(@Request() req, @Body() createOrderDto: CreateOrderDto) {
+  async createOrder(
+    @Request() req: AuthenticatedRequest,
+    @Body() createOrderDto: CreateOrderDto,
+  ) {
     return this.ordersService.createOrder(req.user.user_id, createOrderDto);
   }
 
   @Get()
-  async getUserOrders(@Request() req) {
+  async getUserOrders(@Request() req: AuthenticatedRequest) {
     return this.ordersService.getUserOrders(req.user.user_id);
   }
 
   @Get(':id')
   async getOrderById(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) orderId: number,
   ) {
     return this.ordersService.getOrderById(orderId, req.user.user_id);
@@ -47,7 +51,7 @@ export class OrdersController {
 
   @Get(':id/tracking')
   async getOrderTracking(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) orderId: number,
   ) {
     return this.ordersService.getOrderTracking(orderId, req.user.user_id);
@@ -55,7 +59,7 @@ export class OrdersController {
 
   @Patch(':id/status')
   async updateOrderStatus(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) orderId: number,
     @Body() updateStatusDto: UpdateOrderStatusDto,
   ) {
