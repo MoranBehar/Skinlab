@@ -1,5 +1,14 @@
-import { 
-  Controller, Post, Body, Get, UseGuards, Req, Res,HttpCode,HttpStatus} from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Req,
+  Res,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
 import { AuthService } from '../services/auth.service';
@@ -32,7 +41,7 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const result = await this.authService.googleLogin(req);
     res.redirect(
-      `${process.env.FRONTEND_URL}/auth/google/success?token=${result.access_token}`
+      `${process.env.FRONTEND_URL}/auth/google/success?token=${result.access_token}`,
     );
   }
 
@@ -56,7 +65,7 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(JwtAuthGuard)
-  async refreshToken(@GetUser('user_id') userId: number) {    
+  async refreshToken(@GetUser('user_id') userId: number) {
     return this.authService.refreshToken(userId);
   }
 

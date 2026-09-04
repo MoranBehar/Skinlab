@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
@@ -50,7 +55,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -113,7 +121,7 @@ export class AuthService {
     try {
       const payload = this.jwtService.verify(token);
       const user = await this.usersService.findById(payload.sub);
-      
+
       if (!user || user.access_token !== token) {
         throw new UnauthorizedException('Invalid token');
       }
@@ -125,8 +133,8 @@ export class AuthService {
   }
 
   private generateToken(userId: number, email: string, roleId: number): string {
-    const payload = { 
-      sub: userId, 
+    const payload = {
+      sub: userId,
       email: email,
       role: roleId,
     };

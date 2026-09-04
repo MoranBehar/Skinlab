@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Order } from './order.entity';
 
@@ -29,7 +36,9 @@ export class ShippingAddress {
   comments: string;
 
   // Relations
-  @ManyToOne(() => User, (user) => user.shipping_addresses, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.shipping_addresses, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

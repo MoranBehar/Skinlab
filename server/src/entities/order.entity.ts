@@ -1,9 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { User } from './user.entity';
 import { OrderStatus } from './orderStatus.entity';
 import { ShoppingCart } from './shoppingCart.entity';
 import { ShippingType } from './shippingType.entity';
-import { ShippingAddress } from './shippingAddress.entity';
+import { ShippingAddress } from './ShippingAddress.entity';
 import { OrderTracking } from './orderTracking.entity';
 import { OrderItem } from './orderItem.entity';
 

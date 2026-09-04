@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, IsOptional, Matches, Length, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsOptional,
+  Matches,
+  Length,
+  Min,
+} from 'class-validator';
 import { ShippingAddressDto } from './shippingAdress.dto';
 
 export class CreateOrderDto {
@@ -14,7 +22,9 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @IsString()
   @Length(4, 4)
-  @Matches(/^\d{4}$/, { message: 'credit_card_last_four_digits must be exactly 4 digits' })
+  @Matches(/^\d{4}$/, {
+    message: 'credit_card_last_four_digits must be exactly 4 digits',
+  })
   credit_card_last_four_digits: string;
 
   @IsOptional()

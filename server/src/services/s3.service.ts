@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
 
@@ -11,10 +16,12 @@ export class S3Service {
   private logger = new Logger(S3Service.name);
 
   constructor(private configService: ConfigService) {
-
     const region = this.configService.getOrThrow<string>('AWS_REGION');
-    const accessKeyId = this.configService.getOrThrow<string>('AWS_ACCESS_KEY_ID');
-    const secretAccessKey = this.configService.getOrThrow<string>('AWS_SECRET_ACCESS_KEY');
+    const accessKeyId =
+      this.configService.getOrThrow<string>('AWS_ACCESS_KEY_ID');
+    const secretAccessKey = this.configService.getOrThrow<string>(
+      'AWS_SECRET_ACCESS_KEY',
+    );
 
     this.s3Client = new S3Client({
       region: region,
@@ -24,7 +31,8 @@ export class S3Service {
       },
     });
 
-    this.bucketName = this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+    this.bucketName =
+      this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
   }
 
   /**
@@ -37,15 +45,15 @@ export class S3Service {
   ): Promise<string> {
     const fileExtension = file.originalname.split('.').pop();
     const uniqeId = uuid();
-    
-    const baseDir = `products/${productId}`
+
+    const baseDir = `products/${productId}`;
     const key = `${baseDir}/${uniqeId}.${fileExtension}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
       Body: file.buffer,
-      ContentType: file.mimetype
+      ContentType: file.mimetype,
     });
 
     try {
@@ -60,13 +68,13 @@ export class S3Service {
     }
   }
 
-
   async deleteProductImage(productId: number): Promise<void> {
-    this.logger.warn(`Soft delete activated for Product ID: ${productId}. Skipping physical image cleanup`);
+    this.logger.warn(
+      `Soft delete activated for Product ID: ${productId}. Skipping physical image cleanup`,
+    );
   }
 
-  
-  //Get a signed URL (in case you need private access) 
+  //Get a signed URL (in case you need private access)
   async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucketName,

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ShoppingCart } from '../entities/shoppingCart.entity';
@@ -18,11 +22,15 @@ export class CartService {
     private productRepository: Repository<Product>,
   ) {}
 
-  
   async getOrCreateCart(userId: number): Promise<ShoppingCart> {
     let cart = await this.cartRepository.findOne({
       where: { user_id: userId },
-      relations: ['items', 'items.product', 'items.product.images', 'items.product.category'],
+      relations: [
+        'items',
+        'items.product',
+        'items.product.images',
+        'items.product.category',
+      ],
     });
 
     if (!cart) {
@@ -34,7 +42,6 @@ export class CartService {
     return cart;
   }
 
-  
   async getCart(userId: number) {
     const cart = await this.getOrCreateCart(userId);
 
@@ -59,13 +66,12 @@ export class CartService {
       summary: {
         totalItems,
         subtotal: Number(subtotal.toFixed(2)),
-        tax: Number((subtotal * taxPrecentage).toFixed(2)), 
+        tax: Number((subtotal * taxPrecentage).toFixed(2)),
         total: Number((subtotal * totalMuliplier).toFixed(2)),
       },
     };
   }
 
-  
   async addToCart(userId: number, addToCartDto: AddToCartDto) {
     const { product_id, quantity } = addToCartDto;
 
@@ -134,7 +140,6 @@ export class CartService {
     return this.getCart(userId);
   }
 
- 
   async removeFromCart(userId: number, productId: number) {
     const cart = await this.getOrCreateCart(userId);
 
@@ -150,7 +155,6 @@ export class CartService {
     return this.getCart(userId);
   }
 
-
   async clearCart(userId: number) {
     const cart = await this.getOrCreateCart(userId);
 
@@ -160,7 +164,6 @@ export class CartService {
 
     return { message: 'Cart cleared successfully' };
   }
-
 
   async getCartItemCount(userId: number): Promise<number> {
     const cart = await this.cartRepository.findOne({

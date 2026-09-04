@@ -10,7 +10,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
-
     const secret = configService.getOrThrow<string>('JWT_SECRET');
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -26,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersService.findById(userId);
 
     console.log('User found: ', user ? 'yes' : 'no');
-    
+
     if (!user) {
       throw new UnauthorizedException();
     }

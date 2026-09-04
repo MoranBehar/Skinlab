@@ -7,7 +7,7 @@ async function bootstrap() {
 
   // Enable CORS for React frontend
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? "http://localhost:3001",
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
     credentials: true,
   });
 

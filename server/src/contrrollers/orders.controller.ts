@@ -24,14 +24,11 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-    // ----- PUBLIC/USER ROUTES -----
+  // ----- PUBLIC/USER ROUTES -----
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createOrder(
-    @Request() req,
-    @Body() createOrderDto: CreateOrderDto,
-  ) {
+  async createOrder(@Request() req, @Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.createOrder(req.user.user_id, createOrderDto);
   }
 
@@ -71,7 +68,6 @@ export class OrdersController {
 
   // ----- ADMIN ROUTES (Requires RolesGuard & @Roles(1)) -----
 
-
   @Get('admin/all')
   @UseGuards(RolesGuard)
   @Roles(1)
@@ -87,14 +83,12 @@ export class OrdersController {
     });
   }
 
-
   @Get('admin/stats')
   @UseGuards(RolesGuard)
   @Roles(1)
   async getOrderStats() {
     return await this.ordersService.getOrderStats();
   }
-
 
   @Get('admin/revenue')
   @UseGuards(RolesGuard)
@@ -105,14 +99,12 @@ export class OrdersController {
     return await this.ordersService.getRevenueStats(period);
   }
 
-
   @Get('admin/recent')
   @UseGuards(RolesGuard)
   @Roles(1)
   async getRecentOrders(@Query('limit') limit: string = '10') {
     return await this.ordersService.getRecentOrders(parseInt(limit));
   }
-
 
   @Get('admin/:id')
   @UseGuards(RolesGuard)
@@ -129,9 +121,6 @@ export class OrdersController {
     @Param('id', ParseIntPipe) orderId: number,
     @Body() updateStatusDto: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateOrderStatusAdmin(
-      orderId,
-      updateStatusDto,
-    );
+    return this.ordersService.updateOrderStatusAdmin(orderId, updateStatusDto);
   }
 }

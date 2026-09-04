@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsString, IsNumber, IsBoolean, IsOptional, Min, Max, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  Min,
+  Max,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -27,7 +35,7 @@ export class CreateProductDto {
   @IsNumber()
   skin_type: number;
 
-   @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }) => parseInt(value))
   @IsNumber()
   product_type: number;
 
@@ -52,8 +60,4 @@ export class CreateProductDto {
   @Min(0)
   @Max(100)
   discount_percentage?: number;
-}
-
-function IsNoEmpty(): (target: CreateProductDto, propertyKey: "name") => void {
-  throw new Error('Function not implemented.');
 }
