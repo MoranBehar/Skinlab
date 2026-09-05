@@ -9,7 +9,7 @@ import { ProductCategory } from '../entities/productCategory.entity';
 import { TargetAudience } from '../entities/targetAudience.entity';
 import { SkinType } from '../entities/skinType.entity';
 import { ProductType } from '../entities/productType.entity';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @Module({
   imports: [

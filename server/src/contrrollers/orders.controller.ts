@@ -16,9 +16,9 @@ import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto } from '../DTO/orders/createOrder.dto';
 import { UpdateOrderStatusDto } from '../DTO/orders/updateOrderStatus.dto';
 import { JwtAuthGuard } from '../common/guards/jwtAuth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import type { AuthenticatedRequest } from 'src/common/types/authenticatedRequest';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import type { AuthenticatedRequest } from '../common/types/authenticatedRequest';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)

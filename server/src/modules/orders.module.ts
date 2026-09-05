@@ -11,8 +11,8 @@ import { ShoppingCart } from '../entities/shoppingCart.entity';
 import { ShoppingCartItem } from '../entities/shoppingCartItem.entity';
 import { Product } from '../entities/product.entity';
 import { ProductImage } from '../entities/productImage.entity';
-import { OrderItem } from 'src/entities/orderItem.entity';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { OrderItem } from '../entities/orderItem.entity';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @Module({
   imports: [
