@@ -14,9 +14,12 @@ const CartIcon: React.FC = () => {
         position: 'relative',
         cursor: 'pointer',
         fontSize: '1.5rem',
+        lineHeight: 1,
+        display: 'inline-flex',
+        alignItems: 'center',
       }}
     >
-      🛒
+      <i className="bi bi-cart3" />
       {cartCount > 0 && (
         <Badge
           bg="danger"

@@ -6,13 +6,19 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
 } from '@nestjs/websockets';
-import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Server, Socket } from 'socket.io';
 import { UsersService } from '../services/users.service';
 import { ChatService } from '../services/chat.service';
 import { SendMessageDto } from '../DTO/chat/sendMessage.dto';
+import { MarkReadDto } from '../DTO/chat/markRead.dto';
 import {
   WsJwtGuard,
   authenticateSocket,
@@ -86,8 +92,23 @@ export class ChatGateway implements OnGatewayConnection {
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('markRead')
-  async handleMarkRead(@ConnectedSocket() client: Socket): Promise<void> {
+  async handleMarkRead(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: MarkReadDto,
+  ): Promise<void> {
     const user = getSocketUser(client)!;
-    await this.chatService.markConversationAsRead(user.user_id, user.role_id);
+    const isAdmin = user.role_id === ADMIN_ROLE_ID;
+
+    if (isAdmin && !dto.user_id) {
+      throw new BadRequestException(
+        'user_id is required when an admin marks a conversation as read',
+      );
+    }
+
+    const conversationUserId = isAdmin ? dto.user_id! : user.user_id;
+    await this.chatService.markConversationAsRead(
+      conversationUserId,
+      user.role_id,
+    );
   }
 }

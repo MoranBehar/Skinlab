@@ -59,7 +59,7 @@ const ChatWidget: React.FC = () => {
           <div className="bg-dark text-white p-2 rounded-top d-flex justify-content-between align-items-center">
             <span>Support Chat</span>
             <Button variant="link" size="sm" className="text-white p-0" onClick={handleToggle}>
-              ✕
+              <i className="bi bi-x-lg" />
             </Button>
           </div>
 
@@ -119,7 +119,7 @@ const ChatWidget: React.FC = () => {
           marginLeft: 'auto',
         }}
       >
-        💬
+        <i className="bi bi-chat-dots-fill" />
         {unreadCount > 0 && (
           <Badge
             bg="danger"

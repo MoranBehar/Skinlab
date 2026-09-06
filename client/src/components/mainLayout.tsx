@@ -32,23 +32,24 @@ const MainLayout: React.FC = () => {
           
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
+              {isAuthenticated && (
+                <Nav.Link>
+                  <CartIcon />
+                </Nav.Link>
+              )}
+
               <Nav.Link onClick={() => navigate('/products')}>
                 Products
               </Nav.Link>
-              {isAuthenticated && (
-                <>
-                  <Nav.Link onClick={() => navigate('/home')}>
-                    my skinlab
-                  </Nav.Link>
 
-                  <Nav.Link className="me-3">
-                    <CartIcon />
-                  </Nav.Link>
-                </>
+              {isAuthenticated && (
+                <Nav.Link onClick={() => navigate('/home')}>
+                  my skinlab
+                </Nav.Link>
               )}
 
               {isManager && (
-                <Nav.Link onClick={() => navigate('/admin/dashboard')}> 
+                <Nav.Link onClick={() => navigate('/admin/dashboard')}>
                   Admin Dashboard
                 </Nav.Link>
               )}

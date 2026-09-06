@@ -23,7 +23,7 @@ export const AdminChatPage: React.FC = () => {
       .getConversationMessages(userId)
       .then(loadMessages)
       .catch((error) => console.error('Failed to load conversation:', error));
-    markRead();
+    markRead(userId);
   };
 
   const handleSend = (e: React.FormEvent) => {
