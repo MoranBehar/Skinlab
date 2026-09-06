@@ -16,6 +16,7 @@ import { ShippingType } from './entities/shippingType.entity';
 import { Order } from './entities/order.entity';
 import { OrderTracking } from './entities/orderTracking.entity';
 import { OrderItem } from './entities/orderItem.entity';
+import { Message } from './entities/message.entity';
 
 // DataSource for the TypeORM CLI (migration:generate/create/run/revert - see
 // package.json scripts). The app itself connects via TypeOrmModule.forRootAsync
@@ -45,6 +46,7 @@ export const AppDataSource = new DataSource({
     Order,
     OrderTracking,
     OrderItem,
+    Message,
   ],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,
