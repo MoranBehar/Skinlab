@@ -22,7 +22,7 @@ export class Order {
   @Column({ type: 'integer' })
   user_id: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'integer' })
   status_id: number;
 
   @Column({ type: 'date' })
@@ -34,7 +34,7 @@ export class Order {
   @Column({ type: 'integer' })
   shopping_cart_id: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'integer' })
   shipping_type_id: number;
 
   @Column({ type: 'text' })

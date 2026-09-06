@@ -13,10 +13,10 @@ export class OrderItem {
   @PrimaryGeneratedColumn('increment', { name: 'order_item_id' })
   order_item_id: number;
 
-  @Column({ name: 'order_id', type: 'numeric' })
+  @Column({ name: 'order_id', type: 'integer' })
   order_id: number;
 
-  @Column({ name: 'product_id', type: 'numeric' })
+  @Column({ name: 'product_id', type: 'integer' })
   product_id: number;
 
   @Column({ type: 'numeric' })

@@ -75,10 +75,15 @@ connection, JWT secret, Google OAuth credentials, AWS/S3 credentials, frontend U
 
 ### 3. Set up the database
 
-Create a PostgreSQL database matching `DATABASE_NAME` in `server/.env`. Since the project uses
-`synchronize: false` and does not yet have TypeORM migrations, the schema must currently be
-created manually (e.g. from an existing SQL dump or by temporarily enabling `synchronize: true` in
-a local/dev environment) before starting the server.
+Create a PostgreSQL database matching `DATABASE_NAME` in `server/.env`, then run the migrations:
+
+```bash
+cd server
+npm run migration:run
+```
+
+See `server/src/migrations/` for the schema history and `server/package.json` for the other
+`migration:*` scripts (`generate`, `create`, `revert`).
 
 ### 4. Seed the database (optional)
 

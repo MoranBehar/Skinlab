@@ -3,7 +3,7 @@ import { Product } from './product.entity';
 
 @Entity({ schema: 'skinlab', name: 'skin_type' })
 export class SkinType {
-  @PrimaryColumn({ type: 'numeric' })
+  @PrimaryColumn({ type: 'integer' })
   skin_type_id: number;
 
   @Column({ type: 'text', unique: true })
