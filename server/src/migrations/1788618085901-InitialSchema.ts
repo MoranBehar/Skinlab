@@ -27,7 +27,7 @@ export class InitialSchema1788618085901 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "skinlab"."order_statuses" (
-        "status_id" numeric NOT NULL,
+        "status_id" integer NOT NULL,
         "status_name" text NOT NULL,
         CONSTRAINT "UQ_order_statuses_status_name" UNIQUE ("status_name"),
         CONSTRAINT "PK_order_statuses" PRIMARY KEY ("status_id")
@@ -36,7 +36,7 @@ export class InitialSchema1788618085901 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "skinlab"."product_categories" (
-        "category_id" numeric NOT NULL,
+        "category_id" integer NOT NULL,
         "category_name" text NOT NULL,
         CONSTRAINT "UQ_product_categories_category_name" UNIQUE ("category_name"),
         CONSTRAINT "PK_product_categories" PRIMARY KEY ("category_id")
@@ -45,7 +45,7 @@ export class InitialSchema1788618085901 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "skinlab"."target_audience" (
-        "audience_id" numeric NOT NULL,
+        "audience_id" integer NOT NULL,
         "audience_name" text NOT NULL,
         CONSTRAINT "UQ_target_audience_audience_name" UNIQUE ("audience_name"),
         CONSTRAINT "PK_target_audience" PRIMARY KEY ("audience_id")
@@ -54,7 +54,7 @@ export class InitialSchema1788618085901 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "skinlab"."skin_type" (
-        "skin_type_id" numeric NOT NULL,
+        "skin_type_id" integer NOT NULL,
         "skin_type_name" text NOT NULL,
         CONSTRAINT "UQ_skin_type_skin_type_name" UNIQUE ("skin_type_name"),
         CONSTRAINT "PK_skin_type" PRIMARY KEY ("skin_type_id")
@@ -63,7 +63,7 @@ export class InitialSchema1788618085901 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "skinlab"."product_type" (
-        "product_type_id" numeric NOT NULL,
+        "product_type_id" integer NOT NULL,
         "product_type_name" text NOT NULL,
         CONSTRAINT "UQ_product_type_product_type_name" UNIQUE ("product_type_name"),
         CONSTRAINT "PK_product_type" PRIMARY KEY ("product_type_id")
@@ -210,11 +210,11 @@ export class InitialSchema1788618085901 implements MigrationInterface {
       CREATE TABLE "skinlab"."orders" (
         "order_id" SERIAL NOT NULL,
         "user_id" integer NOT NULL,
-        "status_id" numeric NOT NULL,
+        "status_id" integer NOT NULL,
         "date_placed" date NOT NULL,
         "price" numeric NOT NULL,
         "shopping_cart_id" integer NOT NULL,
-        "shipping_type_id" numeric NOT NULL,
+        "shipping_type_id" integer NOT NULL,
         "credit_card_brand" text NOT NULL,
         "credit_card_last_four_digits" text NOT NULL,
         "shipping_address_id" integer,
@@ -270,8 +270,8 @@ export class InitialSchema1788618085901 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE "skinlab"."order_items" (
         "order_item_id" SERIAL NOT NULL,
-        "order_id" numeric NOT NULL,
-        "product_id" numeric NOT NULL,
+        "order_id" integer NOT NULL,
+        "product_id" integer NOT NULL,
         "quantity" numeric NOT NULL,
         "price_at_purchase" numeric NOT NULL,
         CONSTRAINT "PK_order_items" PRIMARY KEY ("order_item_id")
