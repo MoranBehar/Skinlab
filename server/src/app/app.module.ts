@@ -10,6 +10,7 @@ import { UsersModule } from '../modules/users.module';
 import { ProductsModule } from '../modules/products.module';
 import { CartModule } from '../modules/cart.module';
 import { OrdersModule } from '../modules/orders.module';
+import { ChatModule } from '../modules/chat.module';
 
 // Import all entities
 import { User } from '../entities/user.entity';
@@ -28,6 +29,7 @@ import { ShippingType } from '../entities/shippingType.entity';
 import { Order } from '../entities/order.entity';
 import { OrderTracking } from '../entities/orderTracking.entity';
 import { OrderItem } from '../entities/orderItem.entity';
+import { Message } from '../entities/message.entity';
 
 @Module({
   imports: [
@@ -64,6 +66,7 @@ import { OrderItem } from '../entities/orderItem.entity';
           Order,
           OrderTracking,
           OrderItem,
+          Message,
         ],
         synchronize: false,
         logging: true,
@@ -76,6 +79,7 @@ import { OrderItem } from '../entities/orderItem.entity';
     ProductsModule,
     CartModule,
     OrdersModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

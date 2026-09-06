@@ -2,6 +2,7 @@ import React from 'react';
 import { Container, Navbar, Nav, Button } from 'react-bootstrap';
 import { Outlet, useNavigate } from 'react-router-dom';
 import CartIcon from './cart/cartIcon';
+import ChatWidget from './chat/chatWidget';
 import { useAuth } from '../contexts/authContext';
 
 const MainLayout: React.FC = () => {
@@ -102,6 +103,8 @@ const MainLayout: React.FC = () => {
           <p className="mb-0">&copy; 2025 Skin Lab. All rights reserved.</p>
         </Container>
       </footer>
+
+      {isAuthenticated && !isManager && <ChatWidget />}
     </>
   );
 };

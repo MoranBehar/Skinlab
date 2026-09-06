@@ -14,6 +14,7 @@ import ProductsPage from './pages/productsPage';
 import ProductDetailPage from './pages/productDetailPage';
 import GoogleAuthSuccess from './components/googleAuthSuccess';
 import { CartProvider } from './contexts/cartContext';
+import { ChatProvider } from './contexts/chatContext';
 import CartPage from './pages/cartPage';
 import UserOrders from './pages/userOrdersPage';
 import OrderDetails from './pages/orderDetailsPage';
@@ -24,6 +25,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <CartProvider>
+        <ChatProvider>
         <Routes>
           {/* Public Routes - only for not connected */}
           <Route path="login" element={
@@ -84,6 +86,7 @@ const App: React.FC = () => {
           {/* 404 Not Found */}
           <Route path="*" element={<Navigate to="/products" replace />} />
         </Routes>
+        </ChatProvider>
       </CartProvider>
     </AuthProvider>
   );

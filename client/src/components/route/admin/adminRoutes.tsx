@@ -7,6 +7,7 @@ import { AdminProductForm } from '../../admin/adminProductsForm';
 import { AdminOrders } from '../../../pages/admin/adminOrdersPage';
 import { AdminOrderDetail } from '../../../pages/admin/adminOrderDetailPage';
 import { AdminAnalytics } from '../../../pages/admin/AdminAnalyticsPage';
+import { AdminChatPage } from '../../../pages/admin/adminChatPage';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -50,6 +51,9 @@ export const AdminRoutes: React.FC = () => {
 
         {/* Analytics Routes */}
         <Route path="analytics" element={<AdminAnalytics />} />
+
+        {/* Chat Route */}
+        <Route path="chat" element={<AdminChatPage />} />
         
         {/* Fallback */}
         <Route path="*" element={<Navigate to="./dashboard" replace />} />

@@ -28,6 +28,6 @@ import { UsersModule } from './users.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  exports: [AuthService, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}
