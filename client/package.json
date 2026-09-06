@@ -58,6 +58,7 @@
     ]
   },
   "devDependencies": {
-    "@types/axios": "^0.9.36"
+    "@types/axios": "^0.9.36",
+    "yaml": "^2.4.2"
   }
 }
