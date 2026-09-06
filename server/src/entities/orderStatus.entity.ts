@@ -4,7 +4,7 @@ import { OrderTracking } from './orderTracking.entity';
 
 @Entity({ schema: 'skinlab', name: 'order_statuses' })
 export class OrderStatus {
-  @PrimaryColumn({ type: 'numeric' })
+  @PrimaryColumn({ type: 'integer' })
   status_id: number;
 
   @Column({ type: 'text', unique: true })
