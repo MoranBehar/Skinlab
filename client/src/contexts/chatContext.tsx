@@ -14,7 +14,7 @@ interface ChatContextType {
   messages: ChatMessage[];
   connected: boolean;
   sendMessage: (body: string, targetUserId?: number) => void;
-  markRead: () => void;
+  markRead: (targetUserId?: number) => void;
   loadMessages: (messages: ChatMessage[]) => void;
 }
 
@@ -72,8 +72,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     );
   };
 
-  const markRead = () => {
-    socketRef.current?.emit('markRead');
+  const markRead = (targetUserId?: number) => {
+    socketRef.current?.emit('markRead', targetUserId ? { user_id: targetUserId } : {});
   };
 
   const loadMessages = (initial: ChatMessage[]) => {
