@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 // Import all modules
 import { AuthModule } from '../modules/auth.module';
@@ -75,5 +77,7 @@ import { OrderItem } from '../entities/orderItem.entity';
     CartModule,
     OrdersModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
