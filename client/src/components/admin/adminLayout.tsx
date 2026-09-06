@@ -14,6 +14,7 @@ export const AdminLayout: React.FC = () => {
     { path: '/admin/products', icon: 'bi-box-seam', label: 'Products' },
     { path: '/admin/orders', icon: 'bi-cart-check', label: 'Orders' },
     { path: '/admin/analytics', icon: 'bi-graph-up', label: 'Analytics' },
+    { path: '/admin/chat', icon: 'bi-chat-dots', label: 'Chat' },
   ];
 
   return (
