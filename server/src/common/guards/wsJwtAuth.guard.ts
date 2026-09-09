@@ -47,7 +47,7 @@ export async function authenticateSocket(
   };
 }
 
-function extractToken(client: Socket): string | undefined {
+export function extractToken(client: Socket): string | undefined {
   const authToken = client.handshake.auth?.token as string | undefined;
   if (authToken) {
     return authToken;
