@@ -31,6 +31,7 @@ export const AdminOrders: React.FC = () => {
 
   useEffect(() => {
     filterOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, filterStatus, searchTerm]);
 
   const fetchOrders = async () => {

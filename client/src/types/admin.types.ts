@@ -1,4 +1,4 @@
-import { OrderItem, OrderTracking, ShippingAddress } from "./order.types";
+import { OrderTracking } from "./order.types";
 
 // export interface AdminOrder {
 //   order_id: number;

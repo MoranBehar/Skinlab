@@ -42,6 +42,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       setCart(null);
       setCartCount(0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const refreshCart = async () => {

@@ -10,6 +10,7 @@ export const AdminAnalytics: React.FC = () => {
 
   useEffect(() => {
     fetchRevenueData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   const fetchRevenueData = async () => {

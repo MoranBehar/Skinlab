@@ -27,17 +27,16 @@ export const AdminProductForm: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isLoadingProduct, setIsLoadingProduct] = useState(false); 
 
   useEffect(() => {
     if (isEditMode) {
       fetchProduct();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchProduct = async () => {
     try {
-      setIsLoadingProduct(true);
       const product = await adminApi.getProductById(parseInt(id!)) as Product;
       console.log('Fetched product:', product);
 
@@ -61,8 +60,6 @@ export const AdminProductForm: React.FC = () => {
 
     } catch (error) {
       console.error('Failed to fetch product:', error);
-    } finally {
-      setIsLoadingProduct(false);
     }
   };
 

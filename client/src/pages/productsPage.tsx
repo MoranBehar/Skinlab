@@ -6,10 +6,8 @@ import ProductCard from '../components/products/productCard';
 import ProductFilters from '../components/products/productFilters';
 import ProductSort from '../components/products/productSort';
 import ProductPagination from '../components/products/productPagination';
-import { useNavigate } from 'react-router-dom';
 
 const ProductsPage: React.FC = () => {
-  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,5 @@
 import api from './api';
 import { CartResponse } from '../types/cart.types';
-import { count } from 'console';
 
 export const cartAPI = {
   getCart: async (): Promise<CartResponse> => {

@@ -52,7 +52,8 @@ export const useOrders = () => {
     if (isAuthenticated) {
         fetchOrders();
     }
-  }, [isAuthenticated]); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   return {
     orders,
@@ -115,6 +116,7 @@ export const useOrderDetails = (orderId: number) => {
     if (orderId) {
       fetchOrderDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   return {

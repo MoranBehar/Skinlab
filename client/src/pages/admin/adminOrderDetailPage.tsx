@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Badge, Button, Table } from 'react-bootstrap';
 import { adminApi } from '../../services/admin.api';
-import { AdminOrder, OrderDetail } from '../../types/admin.types';
+import { AdminOrder } from '../../types/admin.types';
 
 export const AdminOrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +12,7 @@ export const AdminOrderDetail: React.FC = () => {
 
   useEffect(() => {
     fetchOrderDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchOrderDetail = async () => {
