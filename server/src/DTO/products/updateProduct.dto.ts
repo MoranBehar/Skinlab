@@ -53,6 +53,12 @@ export class UpdateProductDto {
   is_available?: boolean;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
+  @IsNumber()
+  @Min(0)
+  stock_quantity?: number;
+
+  @IsOptional()
   @Transform(({ value }: { value: unknown }) =>
     value ? parseInt(value as string) : null,
   )

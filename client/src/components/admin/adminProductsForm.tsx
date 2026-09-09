@@ -21,6 +21,7 @@ export const AdminProductForm: React.FC = () => {
     how_to_use: '',
     discount_percentage: 0,
     is_available: true,
+    stock_quantity: 0,
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -51,6 +52,7 @@ export const AdminProductForm: React.FC = () => {
         how_to_use: product.how_to_use,
         discount_percentage: product.discount_percentage,
         is_available: product.is_available,
+        stock_quantity: product.stock_quantity,
       });
 
       if (product.images && product.images.length > 0) {
@@ -202,6 +204,23 @@ export const AdminProductForm: React.FC = () => {
                         onChange={handleInputChange}
                         min="0"
                         max="100"
+                        placeholder="0"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Stock Quantity *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="stock_quantity"
+                        value={formData.stock_quantity}
+                        onChange={handleInputChange}
+                        required
+                        min="0"
                         placeholder="0"
                       />
                     </Form.Group>

@@ -102,6 +102,7 @@ export interface ProductFormData {
   how_to_use: string;
   discount_percentage?: number;
   is_available: boolean;
+  stock_quantity: number;
 }
 
 

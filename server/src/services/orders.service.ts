@@ -143,6 +143,28 @@ export class OrdersService {
     // order item insert), the whole order/tracking/cart-clear rolls back
     // instead of leaving a partial order behind.
     const savedOrder = await this.dataSource.transaction(async (manager) => {
+      // Decrement stock atomically per item - the WHERE guard means a
+      // concurrent checkout racing for the last unit gets 0 affected rows
+      // and fails cleanly instead of allowing stock to go negative.
+      for (const item of orderItemsPayload) {
+        const result = await manager
+          .createQueryBuilder()
+          .update(Product)
+          .set({ stock_quantity: () => `stock_quantity - ${item.quantity}` })
+          .where('product_id = :id AND stock_quantity >= :qty', {
+            id: item.product_id,
+            qty: item.quantity,
+          })
+          .execute();
+
+        if (result.affected === 0) {
+          const product = productMap.get(item.product_id);
+          throw new BadRequestException(
+            `Insufficient stock for ${product?.name ?? `product ${item.product_id}`}`,
+          );
+        }
+      }
+
       let shippingAddressId: number | null = null;
 
       if (Number(shippingType.type_id) === homeDelivery && shipping_address) {
