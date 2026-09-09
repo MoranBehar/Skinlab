@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
@@ -13,6 +14,7 @@ export class OrderItem {
   @PrimaryGeneratedColumn('increment', { name: 'order_item_id' })
   order_item_id: number;
 
+  @Index('IDX_order_items_order_id')
   @Column({ name: 'order_id', type: 'integer' })
   order_id: number;
 

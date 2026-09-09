@@ -1,4 +1,11 @@
-import { IsOptional, IsNumber, IsString, IsEnum, Min } from 'class-validator';
+import {
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum SortBy {
@@ -64,5 +71,6 @@ export class FilterProductsDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 12;
 }

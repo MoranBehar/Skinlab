@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Order } from './order.entity';
@@ -14,6 +15,7 @@ export class ShippingAddress {
   @PrimaryGeneratedColumn()
   address_id: number;
 
+  @Index('IDX_shipping_address_user_id')
   @Column({ type: 'integer' })
   user_id: number;
 

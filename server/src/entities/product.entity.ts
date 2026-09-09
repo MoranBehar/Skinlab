@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { ProductCategory } from './productCategory.entity';
 import { TargetAudience } from './targetAudience.entity';
@@ -25,18 +26,22 @@ export class Product {
   @Column({ type: 'text' })
   description: string;
 
+  @Index('IDX_products_category_id')
   @Column({ type: 'integer' })
   category_id: number;
 
   @Column({ type: 'numeric' })
   price: number;
 
+  @Index('IDX_products_target_audience')
   @Column({ type: 'integer' })
   target_audience: number;
 
+  @Index('IDX_products_skin_type')
   @Column({ type: 'integer' })
   skin_type: number;
 
+  @Index('IDX_products_product_type')
   @Column({ type: 'integer' })
   product_type: number;
 
