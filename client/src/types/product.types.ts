@@ -7,6 +7,7 @@ export interface Product {
   rating?: number;
   discount_percentage?: number;
   is_available: boolean;
+  stock_quantity: number;
   category: {
     category_id: number;
     category_name: string;

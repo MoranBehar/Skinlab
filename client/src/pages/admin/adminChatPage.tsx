@@ -24,6 +24,14 @@ export const AdminChatPage: React.FC = () => {
       .then(loadMessages)
       .catch((error) => console.error('Failed to load conversation:', error));
     markRead(userId);
+
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.user_id === userId
+          ? { ...conversation, unread_count: 0 }
+          : conversation,
+      ),
+    );
   };
 
   const handleSend = (e: React.FormEvent) => {

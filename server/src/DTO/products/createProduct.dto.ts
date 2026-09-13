@@ -48,6 +48,11 @@ export class CreateProductDto {
   @IsNotEmpty()
   is_available: boolean;
 
+  @Transform(({ value }: { value: unknown }) => parseInt(value as string))
+  @IsNumber()
+  @Min(0)
+  stock_quantity: number;
+
   @IsOptional()
   @IsNumber()
   @Min(1)

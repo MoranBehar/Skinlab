@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Badge, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Badge, Modal } from 'react-bootstrap';
 import { adminApi } from '../../services/admin.api';
 
 interface Product {

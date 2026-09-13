@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { cartAPI } from '../services/cart.api';
 import { CartResponse } from '../types/cart.types';
 import { useAuth } from './authContext';
@@ -34,17 +34,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartCount, setCartCount] = useState(0);
   const { isAuthenticated } = useAuth();
 
-  //  Loading cart on start
-  useEffect(() => {
-    if (isAuthenticated) {
-      refreshCart();
-    } else {
-      setCart(null);
-      setCartCount(0);
-    }
-  }, [isAuthenticated]);
-
-  const refreshCart = async () => {
+  const refreshCart = useCallback(async () => {
     if (!isAuthenticated) return;
 
     setLoading(true);
@@ -60,7 +50,17 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated]);
+
+  //  Loading cart on start
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshCart();
+    } else {
+      setCart(null);
+      setCartCount(0);
+    }
+  }, [isAuthenticated, refreshCart]);
 
   const addToCart = async (productId: number, quantity: number = 1) => {
     try {

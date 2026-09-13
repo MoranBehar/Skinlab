@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Container,
   Row,
@@ -25,18 +25,10 @@ export const AdminOrders: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  useEffect(() => {
-    filterOrders();
-  }, [orders, filterStatus, searchTerm]);
-
   const fetchOrders = async () => {
     try {
-      const data = await adminApi.getAllOrders();  
-      console.log('RAW DATA FROM API:', data);   
+      const data = await adminApi.getAllOrders();
+      console.log('RAW DATA FROM API:', data);
 
       setOrders(data);
       setFilteredOrders(data);
@@ -47,7 +39,7 @@ export const AdminOrders: React.FC = () => {
     }
   };
 
-  const filterOrders = () => {
+  const filterOrders = useCallback(() => {
     let filtered = orders;
 
     if (filterStatus !== 'all') {
@@ -64,7 +56,15 @@ export const AdminOrders: React.FC = () => {
     }
 
     setFilteredOrders(filtered);
-  };
+  }, [orders, filterStatus, searchTerm]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  useEffect(() => {
+    filterOrders();
+  }, [filterOrders]);
 
   const handleStatusChange = (order: AdminOrder) => {
     setSelectedOrder(order);

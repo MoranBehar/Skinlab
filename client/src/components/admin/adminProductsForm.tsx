@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { adminApi } from '../../services/admin.api';
@@ -21,22 +21,15 @@ export const AdminProductForm: React.FC = () => {
     how_to_use: '',
     discount_percentage: 0,
     is_available: true,
+    stock_quantity: 0,
   });
 
   const [images, setImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isLoadingProduct, setIsLoadingProduct] = useState(false); 
 
-  useEffect(() => {
-    if (isEditMode) {
-      fetchProduct();
-    }
-  }, [id]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
-      setIsLoadingProduct(true);
       const product = await adminApi.getProductById(parseInt(id!)) as Product;
       console.log('Fetched product:', product);
 
@@ -51,6 +44,7 @@ export const AdminProductForm: React.FC = () => {
         how_to_use: product.how_to_use,
         discount_percentage: product.discount_percentage,
         is_available: product.is_available,
+        stock_quantity: product.stock_quantity,
       });
 
       if (product.images && product.images.length > 0) {
@@ -59,10 +53,14 @@ export const AdminProductForm: React.FC = () => {
 
     } catch (error) {
       console.error('Failed to fetch product:', error);
-    } finally {
-      setIsLoadingProduct(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (isEditMode) {
+      fetchProduct();
+    }
+  }, [isEditMode, fetchProduct]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -202,6 +200,23 @@ export const AdminProductForm: React.FC = () => {
                         onChange={handleInputChange}
                         min="0"
                         max="100"
+                        placeholder="0"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Stock Quantity *</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="stock_quantity"
+                        value={formData.stock_quantity}
+                        onChange={handleInputChange}
+                        required
+                        min="0"
                         placeholder="0"
                       />
                     </Form.Group>

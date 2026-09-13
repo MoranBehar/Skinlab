@@ -5,6 +5,7 @@ import {
   MessageBody,
   ConnectedSocket,
   OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import {
   BadRequestException,
@@ -22,9 +23,22 @@ import { MarkReadDto } from '../DTO/chat/markRead.dto';
 import {
   WsJwtGuard,
   authenticateSocket,
+  extractToken,
   getSocketUser,
   setSocketUser,
 } from '../common/guards/wsJwtAuth.guard';
+
+interface SocketExpiryData {
+  expiryTimer?: NodeJS.Timeout;
+}
+
+function hasExpiry(value: unknown): value is { exp: number } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { exp?: unknown }).exp === 'number'
+  );
+}
 
 const ADMIN_ROLE_ID = 1;
 export const ADMIN_ROOM = 'chat:admin';
@@ -45,7 +59,7 @@ export function roomForUser(userId: number): string {
     transform: true,
   }),
 )
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -70,9 +84,37 @@ export class ChatGateway implements OnGatewayConnection {
       if (user.role_id === ADMIN_ROLE_ID) {
         await client.join(ADMIN_ROOM);
       }
+
+      // A socket is long-lived, unlike an HTTP request - without this, a
+      // JWT that expires (or belongs to a since-demoted/banned user) would
+      // stay usable for as long as the socket stays open, since nothing
+      // re-checks it after the handshake.
+      this.scheduleExpiryDisconnect(client);
     } catch {
       client.disconnect(true);
     }
+  }
+
+  handleDisconnect(client: Socket): void {
+    const timer = (client.data as SocketExpiryData).expiryTimer;
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+
+  private scheduleExpiryDisconnect(client: Socket): void {
+    const token = extractToken(client);
+    const decoded: unknown = token ? this.jwtService.decode(token) : null;
+
+    if (!hasExpiry(decoded)) {
+      return;
+    }
+
+    const msUntilExpiry = decoded.exp * 1000 - Date.now();
+    (client.data as SocketExpiryData).expiryTimer = setTimeout(
+      () => client.disconnect(true),
+      Math.max(msUntilExpiry, 0),
+    );
   }
 
   @UseGuards(WsJwtGuard)

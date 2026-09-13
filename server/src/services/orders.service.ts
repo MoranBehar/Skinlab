@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository, Between, In } from 'typeorm';
 
 // entities
 import { Order } from '../entities/order.entity';
@@ -57,6 +57,8 @@ export class OrdersService {
     private shippingAddressRepository: Repository<ShippingAddress>,
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   // --- USER CRUD ---
@@ -129,84 +131,101 @@ export class OrdersService {
       throw new BadRequestException('Invalid shipping type');
     }
 
-    let shippingAddressId: number | null = null;
     const homeDelivery = 1;
 
-    if (Number(shippingType.type_id) === homeDelivery) {
-      if (!shipping_address) {
-        throw new BadRequestException(
-          'Shipping address is required for home delivery',
-        );
-      }
-
-      console.log('shipping_address DTO:', shipping_address);
-
-      // Create new shipping address
-      const newAddress = this.shippingAddressRepository.create({
-        user_id: userId,
-        address: shipping_address.address,
-        apartment_number: shipping_address.apartment_number,
-        floor_number: shipping_address.floor_number,
-        city: shipping_address.city,
-        phone_number: shipping_address.phone_number,
-        comments: shipping_address.comments ?? undefined,
-      });
-
-      console.log('newAddress:', newAddress);
-
-      const savedAddress =
-        await this.shippingAddressRepository.save(newAddress);
-      shippingAddressId = savedAddress.address_id;
-
-      console.log('Shipping Address ID:', shippingAddressId);
+    if (Number(shippingType.type_id) === homeDelivery && !shipping_address) {
+      throw new BadRequestException(
+        'Shipping address is required for home delivery',
+      );
     }
 
-    // Create order with 'shipped' status (status_id = 1)
-    const order = this.ordersRepository.create({
-      user: { user_id: userId },
-      status_id: 1,
-      date_placed: new Date(),
-      price: totalPrice,
-      shopping_cart_id: cart.shopping_cart_id,
-      shipping_type_id: createOrderDto.shipping_type_id,
-      credit_card_brand: createOrderDto.credit_card_brand,
-      credit_card_last_four_digits: createOrderDto.credit_card_last_four_digits,
-      shipping_address_id: shippingAddressId ?? undefined,
-    });
+    // Everything below is a single unit of work: if any write fails (e.g. an
+    // order item insert), the whole order/tracking/cart-clear rolls back
+    // instead of leaving a partial order behind.
+    const savedOrder = await this.dataSource.transaction(async (manager) => {
+      // Decrement stock atomically per item - the WHERE guard means a
+      // concurrent checkout racing for the last unit gets 0 affected rows
+      // and fails cleanly instead of allowing stock to go negative.
+      for (const item of orderItemsPayload) {
+        const result = await manager
+          .createQueryBuilder()
+          .update(Product)
+          .set({ stock_quantity: () => `stock_quantity - ${item.quantity}` })
+          .where('product_id = :id AND stock_quantity >= :qty', {
+            id: item.product_id,
+            qty: item.quantity,
+          })
+          .execute();
 
-    const savedOrder = await this.ordersRepository.save(order);
+        if (result.affected === 0) {
+          const product = productMap.get(item.product_id);
+          throw new BadRequestException(
+            `Insufficient stock for ${product?.name ?? `product ${item.product_id}`}`,
+          );
+        }
+      }
 
-    const saveOrderItems = orderItemsPayload.map((itemData) => {
-      const orderItem = this.orderItemsRepository.create({
-        order_id: savedOrder.order_id,
-        product_id: itemData.product_id,
-        quantity: itemData.quantity,
-        price_at_purchase: itemData.price_at_purchase,
+      let shippingAddressId: number | null = null;
+
+      if (Number(shippingType.type_id) === homeDelivery && shipping_address) {
+        const newAddress = manager.create(ShippingAddress, {
+          user_id: userId,
+          address: shipping_address.address,
+          apartment_number: shipping_address.apartment_number,
+          floor_number: shipping_address.floor_number,
+          city: shipping_address.city,
+          phone_number: shipping_address.phone_number,
+          comments: shipping_address.comments ?? undefined,
+        });
+
+        const savedAddress = await manager.save(ShippingAddress, newAddress);
+        shippingAddressId = savedAddress.address_id;
+      }
+
+      // Create order with 'shipped' status (status_id = 1)
+      const order = manager.create(Order, {
+        user: { user_id: userId },
+        status_id: 1,
+        date_placed: new Date(),
+        price: totalPrice,
+        shopping_cart_id: cart.shopping_cart_id,
+        shipping_type_id: createOrderDto.shipping_type_id,
+        credit_card_brand: createOrderDto.credit_card_brand,
+        credit_card_last_four_digits:
+          createOrderDto.credit_card_last_four_digits,
+        shipping_address_id: shippingAddressId ?? undefined,
       });
 
-      return this.orderItemsRepository.save(orderItem);
+      const saved = await manager.save(Order, order);
+
+      const orderItems = orderItemsPayload.map((itemData) =>
+        manager.create(OrderItem, {
+          order_id: saved.order_id,
+          product_id: itemData.product_id,
+          quantity: itemData.quantity,
+          price_at_purchase: itemData.price_at_purchase,
+        }),
+      );
+
+      await manager.save(OrderItem, orderItems);
+
+      // Create initial order tracking entry
+      const tracking = manager.create(OrderTracking, {
+        order_id: saved.order_id,
+        status_id: 1,
+        date: new Date(),
+        comments: 'Order placed successfully',
+      });
+
+      await manager.save(OrderTracking, tracking);
+
+      // Clear the shopping cart
+      await manager.delete(ShoppingCartItem, {
+        shopping_cart_id: cart.shopping_cart_id,
+      });
+
+      return saved;
     });
-
-    await Promise.all(saveOrderItems);
-
-    // Create initial order tracking entry
-    const tracking = this.orderTrackingRepository.create({
-      order_id: savedOrder.order_id,
-      status_id: 1,
-      date: new Date(),
-      comments: 'Order placed successfully',
-    });
-
-    await this.orderTrackingRepository.save(tracking);
-
-    // Clear the shopping cart
-    const deleteResult = await this.cartItemsRepository.delete({
-      shopping_cart_id: cart.shopping_cart_id,
-    });
-
-    console.log(
-      `[orderService] cart id ${cart.shopping_cart_id} cleard. affected rows: ${deleteResult.affected}`,
-    );
 
     // Return the created order with full details
     return this.getOrderById(savedOrder.order_id, userId);

@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -33,7 +34,7 @@ interface ChatProviderProps {
 }
 
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
@@ -74,11 +75,20 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
 
   const markRead = (targetUserId?: number) => {
     socketRef.current?.emit('markRead', targetUserId ? { user_id: targetUserId } : {});
+
+    setMessages((prev) =>
+      prev.map((message) => {
+        const isFromOtherParty = targetUserId
+          ? message.sender_id === targetUserId
+          : message.sender_id !== user?.user_id;
+        return isFromOtherParty ? { ...message, is_read: true } : message;
+      }),
+    );
   };
 
-  const loadMessages = (initial: ChatMessage[]) => {
+  const loadMessages = useCallback((initial: ChatMessage[]) => {
     setMessages(initial);
-  };
+  }, []);
 
   const value: ChatContextType = {
     messages,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as orderApi from '../services/order.api';
 import { Order, OrderTracking, CreateOrderRequest } from '../types/order.types';
 import { useAuth } from '../contexts/authContext';
@@ -11,7 +11,7 @@ export const useOrders = () => {
   const [error, setError] = useState<string>('');
 
  
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!isAuthenticated || !user?.user_id) return;
 
     try {
@@ -24,7 +24,7 @@ export const useOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, user?.user_id]);
 
   
   const createOrder = async (orderData: CreateOrderRequest): Promise<Order> => {
@@ -52,7 +52,7 @@ export const useOrders = () => {
     if (isAuthenticated) {
         fetchOrders();
     }
-  }, [isAuthenticated]); 
+  }, [isAuthenticated, fetchOrders]);
 
   return {
     orders,
@@ -72,7 +72,7 @@ export const useOrderDetails = (orderId: number) => {
   const [error, setError] = useState<string>('');
 
   
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -87,7 +87,7 @@ export const useOrderDetails = (orderId: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
 
  
   const updateStatus = async (statusId: number, comments?: string) => {
@@ -115,7 +115,7 @@ export const useOrderDetails = (orderId: number) => {
     if (orderId) {
       fetchOrderDetails();
     }
-  }, [orderId]);
+  }, [orderId, fetchOrderDetails]);
 
   return {
     order,

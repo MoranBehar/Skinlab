@@ -1,4 +1,4 @@
-import { OrderItem, OrderTracking, ShippingAddress } from "./order.types";
+import { OrderTracking } from "./order.types";
 
 // export interface AdminOrder {
 //   order_id: number;
@@ -102,6 +102,7 @@ export interface ProductFormData {
   how_to_use: string;
   discount_percentage?: number;
   is_available: boolean;
+  stock_quantity: number;
 }
 
 

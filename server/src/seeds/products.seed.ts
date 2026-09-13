@@ -18,6 +18,7 @@ export async function seedProducts(dataSource: DataSource) {
       is_available: true,
       rating: 5,
       discount_percentage: 0,
+      stock_quantity: 50,
       creating_date: new Date(),
     },
     {
@@ -34,6 +35,7 @@ export async function seedProducts(dataSource: DataSource) {
       is_available: true,
       rating: 4,
       discount_percentage: 10,
+      stock_quantity: 50,
       creating_date: new Date(),
     },
     {
@@ -50,6 +52,7 @@ export async function seedProducts(dataSource: DataSource) {
       is_available: true,
       rating: 5,
       discount_percentage: 0,
+      stock_quantity: 50,
       creating_date: new Date(),
     },
     {
@@ -65,6 +68,7 @@ export async function seedProducts(dataSource: DataSource) {
       is_available: true,
       rating: 3,
       discount_percentage: 0,
+      stock_quantity: 50,
       creating_date: new Date(),
     },
     {
@@ -80,6 +84,7 @@ export async function seedProducts(dataSource: DataSource) {
       is_available: true,
       rating: 4,
       discount_percentage: 15,
+      stock_quantity: 50,
       creating_date: new Date(),
     },
   ];

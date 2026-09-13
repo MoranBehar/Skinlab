@@ -10,7 +10,7 @@ const UserOrders: React.FC = () => {
   
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
   if (loading) {
     return (
