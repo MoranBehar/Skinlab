@@ -15,8 +15,7 @@ const ChatWidget: React.FC = () => {
       .getMyMessages()
       .then(loadMessages)
       .catch((error) => console.error('Failed to load chat history:', error));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadMessages]);
 
   const unreadCount = messages.filter(
     (message) => message.sender_id !== user?.user_id && !message.is_read,

@@ -25,9 +25,6 @@ export const AdminChatPage: React.FC = () => {
       .catch((error) => console.error('Failed to load conversation:', error));
     markRead(userId);
 
-    // Optimistically clear this conversation's badge - the server-side
-    // read state is updated by markRead above, but the conversations list
-    // otherwise only refreshes when a new message arrives.
     setConversations((prev) =>
       prev.map((conversation) =>
         conversation.user_id === userId

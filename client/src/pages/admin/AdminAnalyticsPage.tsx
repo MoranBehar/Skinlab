@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Container, Row, Col, Card, Form } from 'react-bootstrap';
 import { adminApi } from '../../services/admin.api';
 import { RevenueData } from '../../types/admin.types';
@@ -8,12 +8,7 @@ export const AdminAnalytics: React.FC = () => {
   const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchRevenueData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
-
-  const fetchRevenueData = async () => {
+  const fetchRevenueData = useCallback(async () => {
     try {
       const data = await adminApi.getRevenueStats(period);
       setRevenueData(data as RevenueData[]);
@@ -22,7 +17,11 @@ export const AdminAnalytics: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    fetchRevenueData();
+  }, [fetchRevenueData]);
 
   const getTotalRevenue = () => {
     return revenueData.reduce((sum, item) => sum + parseFloat(item.revenue.toString()), 0);

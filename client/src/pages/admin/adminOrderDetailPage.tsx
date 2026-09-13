@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Badge, Button, Table } from 'react-bootstrap';
 import { adminApi } from '../../services/admin.api';
@@ -10,29 +10,24 @@ export const AdminOrderDetail: React.FC = () => {
   const [orderDetail, setOrderDetail] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOrderDetail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const fetchOrderDetail = async () => {
+  const fetchOrderDetail = useCallback(async () => {
     try {
       const result = await adminApi.getOrderById(parseInt(id!));
 
-            console.log("***", result);
-
       setOrderDetail({
-        ...result.orderResponse, 
+        ...result.orderResponse,
         tracking: result.tracking,
       });
-
-      console.log("***", orderDetail);
     } catch (error) {
       console.error('Failed to fetch order details:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchOrderDetail();
+  }, [fetchOrderDetail]);
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
